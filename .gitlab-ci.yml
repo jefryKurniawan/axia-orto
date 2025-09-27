@@ -1,0 +1,12 @@
+# Pastikan Anda berada di direktori proyek: ~/Documents/axia-orto/axia-orto$
+
+# Tambahkan file CI/CD baru ke Git
+git add .gitlab-ci.yml
+
+# Buat commit
+git commit -m "feat: Add GitLab CI/CD configuration"
+
+# Dorong commit ini ke GitLab (Gunakan nama remote yang Anda gunakan, kemungkinan 'gitlab' atau 'origin' jika Anda menghapus yang lama)
+git push origin main
+# ATAU jika remote GitLab Anda bernama 'gitlab'
+# git push gitlab main
