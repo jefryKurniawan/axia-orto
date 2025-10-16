@@ -1,12 +1,49 @@
-# Pastikan Anda berada di direktori proyek: ~/Documents/axia-orto/axia-orto$
+# Tentukan image Docker yang akan digunakan (misalnya PHP 8.2)
+image: php:8.2-fpm
 
-# Tambahkan file CI/CD baru ke Git
-git add .gitlab-ci.yml
+# Definisikan service yang dibutuhkan (misalnya MySQL atau MariaDB)
+services:
+  - mariadb:latest
 
-# Buat commit
-git commit -m "feat: Add GitLab CI/CD configuration"
+variables:
+  # Konfigurasi database untuk environment testing
+  MYSQL_DATABASE: laravel_test
+  MYSQL_ROOT_PASSWORD: root
+  # Tentukan lokasi cache Composer
+  COMPOSER_CACHE_DIR: '$CI_PROJECT_DIR/vendor'
 
-# Dorong commit ini ke GitLab (Gunakan nama remote yang Anda gunakan, kemungkinan 'gitlab' atau 'origin' jika Anda menghapus yang lama)
-git push origin main
-# ATAU jika remote GitLab Anda bernama 'gitlab'
-# git push gitlab main
+cache:
+  paths:
+    - vendor/
+    - node_modules/
+
+stages:
+  - build
+  - test
+
+# Job untuk Install Dependencies
+composer_install:
+  stage: build
+  script:
+    - apt-get update -yqq
+    - apt-get install -y git zip unzip libpq-dev libpng-dev libzip-dev
+    - docker-php-ext-install pdo_mysql # Install ekstensi MySQL/MariaDB
+    - curl -sS https://getcomposer.org/installer | php
+    - php composer.phar install --prefer-dist --no-ansi --no-interaction --no-progress
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - vendor/
+
+# Job untuk Menjalankan Unit Tests (menggunakan PHPUnit)
+unit_tests:
+  stage: test
+  # Harus menunggu job 'composer_install' selesai
+  dependencies:
+    - composer_install
+  script:
+    # Buat file .env untuk testing
+    - cp .env.example .env 
+    - php artisan key:generate
+    - php artisan migrate:fresh --env=testing
+    - vendor/bin/phpunit 
