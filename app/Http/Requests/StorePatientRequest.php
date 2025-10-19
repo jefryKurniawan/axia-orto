@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StorePatientRequest extends FormRequest
 {
@@ -12,37 +11,42 @@ class StorePatientRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            // UUID: tidak perlu divalidasi, dibuat oleh DB atau di Controller
-            'medical_record_number' => 'required|string|max:20|unique:patients,medical_record_number',
-            'nik' => 'required|string|max:16|unique:patients,nik',
+            'medical_record_number' => 'required|string|max:20|unique:patients',
             'name' => 'required|string|max:255',
+            'nik' => 'nullable|string|size:16',
             'date_of_birth' => 'required|date|before:today',
-            'gender' => ['required', Rule::in(['L', 'P'])],
+            'gender' => 'required|in:L,P',
             'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255|unique:patients,email',
-            'address' => 'required|string',
-            'province' => 'nullable|string|max:100',
-            'city' => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:10',
-            'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:20',
-            'insurance_type' => ['nullable', Rule::in(['bpjs', 'mandiri', 'asuransi', 'lainnya'])],
-            'insurance_number' => 'nullable|string|max:50',
-            'blood_type' => ['nullable', Rule::in(['A', 'B', 'AB', 'O'])],
+            'address' => 'nullable|string',
+            'emergency_contact' => 'nullable|string|max:255',
+            'insurance_type' => 'required|in:bpjs,mandiri,asuransi',
+            'blood_type' => 'nullable|in:A,B,AB,O',
             'allergies' => 'nullable|string',
-            'medical_history' => 'nullable|string',
-            'is_active' => 'nullable|boolean',
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'medical_record_number.required' => 'Nomor rekam medis harus diisi.',
+            'medical_record_number.unique' => 'Nomor rekam medis sudah digunakan.',
+            'name.required' => 'Nama pasien harus diisi.',
+            'nik.size' => 'NIK harus 16 digit.',
+            'date_of_birth.required' => 'Tanggal lahir harus diisi.',
+            'date_of_birth.before' => 'Tanggal lahir harus sebelum hari ini.',
+            'gender.required' => 'Jenis kelamin harus dipilih.',
         ];
     }
 }
