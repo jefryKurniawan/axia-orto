@@ -1,5 +1,5 @@
 <?php
-// app/Providers/CacheServiceProvider.php - VERSI BARU
+// app/Providers/CacheServiceProvider.php
 
 namespace App\Providers;
 
@@ -11,118 +11,188 @@ class CacheServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Tidak perlu binding repository, karena kita menggunakan Model langsung
+        // Tidak perlu binding repository
     }
 
     public function boot(): void
     {
-        // Clear cache ketika model created, updated, atau deleted
         $this->registerModelCacheClearing();
     }
 
     protected function registerModelCacheClearing(): void
     {
-        // Patient cache clearing
+        $this->registerPatientCacheClearing();
+        $this->registerConsultationCacheClearing();
+        $this->registerUserCacheClearing();
+        $this->registerServiceCacheClearing();
+        $this->registerPatientMeasurementCacheClearing();
+        $this->registerInventoryItemCacheClearing();
+        $this->registerTreatmentOrderCacheClearing();
+        $this->registerOrderItemCacheClearing();
+        $this->registerProductionTrackingCacheClearing();
+        $this->registerPaymentCacheClearing();
+    }
+
+    protected function registerPatientCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\Patient',
             'eloquent.updated: App\Models\Patient',
             'eloquent.deleted: App\Models\Patient',
         ], function () {
-            Cache::tags(['Patient'])->flush();
+            $this->flushCacheByTags(['Patient']);
             $this->commandInfo('Patient cache cleared');
         });
+    }
 
-        // Consultation cache clearing
+    protected function registerConsultationCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\Consultation',
             'eloquent.updated: App\Models\Consultation',
             'eloquent.deleted: App\Models\Consultation',
         ], function () {
-            Cache::tags(['Consultation'])->flush();
+            $this->flushCacheByTags(['Consultation']);
             $this->commandInfo('Consultation cache cleared');
         });
+    }
 
-        // User cache clearing
+    protected function registerUserCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\User',
             'eloquent.updated: App\Models\User',
             'eloquent.deleted: App\Models\User',
         ], function () {
-            Cache::tags(['User'])->flush();
+            $this->flushCacheByTags(['User']);
             $this->commandInfo('User cache cleared');
         });
+    }
 
-        // Service cache clearing
+    protected function registerServiceCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\Service',
             'eloquent.updated: App\Models\Service',
             'eloquent.deleted: App\Models\Service',
         ], function () {
-            Cache::tags(['Service'])->flush();
+            $this->flushCacheByTags(['Service']);
             $this->commandInfo('Service cache cleared');
         });
+    }
 
-        // PatientMeasurement cache clearing
+    protected function registerPatientMeasurementCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\PatientMeasurement',
             'eloquent.updated: App\Models\PatientMeasurement',
             'eloquent.deleted: App\Models\PatientMeasurement',
         ], function () {
-            Cache::tags(['PatientMeasurement'])->flush();
+            $this->flushCacheByTags(['PatientMeasurement']);
             $this->commandInfo('PatientMeasurement cache cleared');
         });
+    }
 
-        // InventoryItem cache clearing
+    protected function registerInventoryItemCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\InventoryItem',
             'eloquent.updated: App\Models\InventoryItem',
             'eloquent.deleted: App\Models\InventoryItem',
         ], function () {
-            Cache::tags(['InventoryItem'])->flush();
+            $this->flushCacheByTags(['InventoryItem']);
             $this->commandInfo('InventoryItem cache cleared');
         });
+    }
 
-        // TreatmentOrder cache clearing
+    protected function registerTreatmentOrderCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\TreatmentOrder',
             'eloquent.updated: App\Models\TreatmentOrder',
             'eloquent.deleted: App\Models\TreatmentOrder',
         ], function () {
-            Cache::tags(['TreatmentOrder'])->flush();
-            // Also clear related caches
-            Cache::tags(['OrderItem', 'ProductionTracking', 'Payment'])->flush();
+            $this->flushCacheByTags(['TreatmentOrder', 'OrderItem', 'ProductionTracking', 'Payment']);
             $this->commandInfo('TreatmentOrder and related caches cleared');
         });
+    }
 
-        // OrderItem cache clearing
+    protected function registerOrderItemCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\OrderItem',
             'eloquent.updated: App\Models\OrderItem',
             'eloquent.deleted: App\Models\OrderItem',
         ], function () {
-            Cache::tags(['OrderItem'])->flush();
+            $this->flushCacheByTags(['OrderItem']);
             $this->commandInfo('OrderItem cache cleared');
         });
+    }
 
-        // ProductionTracking cache clearing
+    protected function registerProductionTrackingCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\ProductionTracking',
             'eloquent.updated: App\Models\ProductionTracking',
             'eloquent.deleted: App\Models\ProductionTracking',
         ], function () {
-            Cache::tags(['ProductionTracking'])->flush();
+            $this->flushCacheByTags(['ProductionTracking']);
             $this->commandInfo('ProductionTracking cache cleared');
         });
+    }
 
-        // Payment cache clearing
+    protected function registerPaymentCacheClearing(): void
+    {
         Event::listen([
             'eloquent.created: App\Models\Payment',
             'eloquent.updated: App\Models\Payment',
             'eloquent.deleted: App\Models\Payment',
         ], function () {
-            Cache::tags(['Payment'])->flush();
+            $this->flushCacheByTags(['Payment']);
             $this->commandInfo('Payment cache cleared');
         });
+    }
+
+    protected function flushCacheByTags(array $tags): void
+    {
+        try {
+            // Cek apakah driver support tagging
+            $store = Cache::getStore();
+            if (method_exists($store, 'tags')) {
+                Cache::tags($tags)->flush();
+            } else {
+                // Fallback: flush seluruh cache jika tidak support tagging
+                Cache::flush();
+                $this->commandInfo('Cache driver does not support tagging, flushed entire cache');
+            }
+        } catch (\Exception $e) {
+            $this->commandInfo("Cache flush error: {$e->getMessage()}");
+            // Fallback ke manual cache clearing
+            $this->manualCacheClear($tags);
+        }
+    }
+
+    protected function manualCacheClear(array $tags): void
+    {
+        foreach ($tags as $tag) {
+            $this->clearCacheByPattern(strtolower($tag));
+        }
+    }
+
+    protected function clearCacheByPattern(string $pattern): void
+    {
+        try {
+            $redis = Cache::getRedis();
+            $keys = $redis->keys("*{$pattern}*");
+            foreach ($keys as $key) {
+                // Remove prefix jika ada
+                $key = str_replace(config('cache.prefix'), '', $key);
+                Cache::forget($key);
+            }
+            $this->commandInfo("Manually cleared cache for pattern: {$pattern}");
+        } catch (\Exception $e) {
+            $this->commandInfo("Manual cache clear failed: {$e->getMessage()}");
+        }
     }
 
     protected function commandInfo(string $message): void

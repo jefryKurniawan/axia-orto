@@ -6,14 +6,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+// use Laravel\Sanctum\HasApiTokens;
 use App\Models\Traits\Cacheable;
 use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
 use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, Cacheable;
+    use HasFactory, Notifiable, Cacheable;
 
     protected $fillable = [
         'uuid',
@@ -87,27 +87,59 @@ class User extends Authenticatable
     // Cache Methods
     public static function getCachedActiveDoctors()
     {
-        return Cache::tags(['User'])->remember('active_doctors', 3600, function () {
+        $key = 'user:active_doctors';
+        $callback = function () {
             return static::doctors()->active()->get();
-        });
+        };
+
+        return self::safeCacheRemember(['User'], $key, 3600, $callback);
     }
 
     public static function getCachedUserStats()
     {
-        return Cache::tags(['User'])->remember('user_stats', 1800, function () {
+        $key = 'user:user_stats';
+        $callback = function () {
             return [
                 'total' => static::count(),
                 'doctors' => static::doctors()->active()->count(),
                 'admins' => static::where('role', 'admin')->active()->count(),
                 'staff' => static::where('role', 'staf_klinik')->active()->count(),
             ];
-        });
+        };
+
+        return self::safeCacheRemember(['User'], $key, 1800, $callback);
     }
 
     public static function getCachedUsersByRole($role)
     {
-        return Cache::tags(['User'])->remember("users.role.{$role}", 1800, function () use ($role) {
+        $key = "users_role_{$role}";
+        $callback = function () use ($role) {
             return static::where('role', $role)->active()->get();
-        });
+        };
+
+        return self::safeCacheRemember(['User'], $key, 1800, $callback);
+    }
+
+    protected static function safeCacheRemember(array $tags, string $key, int $ttl, callable $callback)
+    {
+        try {
+            // Coba dengan tagging terlebih dahulu
+            if (self::supportsTagging()) {
+                return Cache::tags($tags)->remember($key, $ttl, $callback);
+            } else {
+                // Fallback tanpa tagging
+                return Cache::remember($key, $ttl, $callback);
+            }
+        } catch (\Exception $e) {
+            // Jika ada error, fallback ke tanpa cache atau tanpa tagging
+            \Log::warning("Cache error: {$e->getMessage()}, using fallback");
+            return Cache::remember($key, $ttl, $callback);
+        }
+    }
+
+    protected static function supportsTagging(): bool
+    {
+        $driver = config('cache.default');
+        return in_array($driver, ['redis', 'memcached', 'array']);
     }
 }

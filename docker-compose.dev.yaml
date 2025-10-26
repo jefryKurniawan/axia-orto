@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/development/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - .:/app
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - laravel-network
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: je540740
+      MYSQL_DATABASE: axia_orto
+      MYSQL_USER: root
+      MYSQL_PASSWORD: je540740
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - laravel-network
+
+  artisan:
+    build:
+      context: .
+      dockerfile: docker/development/Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      - mysql
+      - redis
+    entrypoint: ["frankenphp", "php-cli", "artisan"]
+    networks:
+      - laravel-network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  laravel-network:
+    driver: bridge

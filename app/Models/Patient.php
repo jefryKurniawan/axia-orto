@@ -30,6 +30,7 @@ class Patient extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'allergies' => 'array'
     ];
 
     // Relationships
@@ -56,9 +57,40 @@ class Patient extends Model
     // Scopes
     public function scopeSearch($query, $search)
     {
-        return $query->where('name', 'like', "%{$search}%")
-            ->orWhere('medical_record_number', 'like', "%{$search}%")
-            ->orWhere('phone', 'like', "%{$search}%");
+        $query->when($filters['search'] ?? null, function ($query, $search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('medical_record_number', 'like', '%' . $search . '%')
+                    ->orWhere('nik', 'like', '%' . $search . '%')
+                    ->orWhere('phone', 'like', '%' . $search . '%');
+            });
+        });
+    }
+
+    /**
+     * Calculate patient age.
+     */
+    public function getAgeAttribute()
+    {
+        return \Carbon\Carbon::parse($this->date_of_birth)->age;
+    }
+
+    /**
+     * Get patient's full gender name.
+     */
+    public function getGenderNameAttribute()
+    {
+        return $this->gender === 'L' ? 'Laki-laki' : 'Perempuan';
+    }
+
+    /**
+     * Check if patient has active orders.
+     */
+    public function hasActiveOrders()
+    {
+        return $this->treatmentOrders()
+            ->whereIn('status', ['draft', 'confirmed', 'production'])
+            ->exists();
     }
 
     public function scopeRecent($query, $days = 30)
@@ -69,6 +101,14 @@ class Patient extends Model
     public function scopeByInsurance($query, $insuranceType)
     {
         return $query->where('insurance_type', $insuranceType);
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'uuid';
     }
 
     // Cache Methods
