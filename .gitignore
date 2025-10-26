@@ -13,3 +13,4 @@ storage/framework/views/*
 .env
 .idea
 *.log
+frankenphp
