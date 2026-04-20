@@ -15,14 +15,13 @@ class Payment extends Model
 
     protected $fillable = [
         'uuid',
-        'order_id',
+        'treatment_order_id',
+        'payment_number',
         'payment_date',
-        'payment_method',
+        'method',
         'amount',
-        'reference_number',
         'status',
         'notes',
-        'created_by',
     ];
 
     protected $casts = [
@@ -33,7 +32,7 @@ class Payment extends Model
     // Relationships
     public function order()
     {
-        return $this->belongsTo(TreatmentOrder::class);
+        return $this->belongsTo(TreatmentOrder::class, 'treatment_order_id');
     }
 
     public function createdBy()

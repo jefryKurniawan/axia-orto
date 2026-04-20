@@ -1,0 +1,246 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Dr. Ahmad Wijaya",
+      "email": "ahmad.wijaya@klinik.co.id",
+      "password": "$2b$10$examplehashedpassword",
+      "role": "dokter",
+      "specialization": "Orthotist & Prosthetist",
+      "phone": "+628123456789",
+      "is_active": true,
+      "created_at": "2024-01-15 08:00:00",
+      "updated_at": "2024-01-15 08:00:00"
+    },
+    {
+      "id": 2,
+      "uuid": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+      "name": "Siti Rahayu",
+      "email": "siti.rahayu@klinik.co.id",
+      "password": "$2b$10$examplehashedpassword2",
+      "role": "staf_klinik",
+      "specialization": null,
+      "phone": "+628987654321",
+      "is_active": true,
+      "created_at": "2024-01-15 08:00:00",
+      "updated_at": "2024-01-15 08:00:00"
+    }
+  ],
+
+  "patients": [
+    {
+      "id": 1,
+      "uuid": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+      "medical_record_number": "MRN-2024-001",
+      "nik": "1234567890123456",
+      "name": "Budi Santoso",
+      "date_of_birth": "1985-05-15",
+      "gender": "L",
+      "phone": "+6281122334455",
+      "address": "Jl. Merdeka No. 123, Jakarta",
+      "emergency_contact": "Sari (Istri) - +6281122334466",
+      "insurance_type": "bpjs",
+      "blood_type": "O",
+      "allergies": "Tidak ada",
+      "created_at": "2024-01-16 09:30:00",
+      "updated_at": "2024-01-16 09:30:00"
+    },
+    {
+      "id": 2,
+      "uuid": "d4e5f6g7-h8i9-0123-defg-456789012345",
+      "medical_record_number": "MRN-2024-002",
+      "nik": "2345678901234567",
+      "name": "Maya Sari",
+      "date_of_birth": "1992-08-20",
+      "gender": "P",
+      "phone": "+6285544332211",
+      "address": "Jl. Sudirman No. 45, Jakarta",
+      "emergency_contact": "Andi (Suami) - +6285544332212",
+      "insurance_type": "mandiri",
+      "blood_type": "A",
+      "allergies": "Debu, Tungau",
+      "created_at": "2024-01-16 10:15:00",
+      "updated_at": "2024-01-16 10:15:00"
+    }
+  ],
+
+  "consultations": [
+    {
+      "id": 1,
+      "uuid": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "patient_id": 1,
+      "doctor_id": 1,
+      "consultation_date": "2024-01-20 14:00:00",
+      "complaint": "Pasca amputasi kaki kanan bawah, membutuhkan protesis untuk mobilitas",
+      "diagnosis": "Amputasi transtibial kanan",
+      "treatment_plan": "Pembuatan protesis kaki kanan bawah dengan socket supracondylar",
+      "notes": "Pasien memiliki kulit sensitif, perlu perhatian khusus pada lining",
+      "follow_up_date": "2024-02-20",
+      "status": "completed",
+      "created_at": "2024-01-20 14:00:00"
+    }
+  ],
+
+  "patient_measurements": [
+    {
+      "id": 1,
+      "uuid": "f6g7h8i9-j0k1-2345-fghi-678901234567",
+      "patient_id": 1,
+      "consultation_id": 1,
+      "measurement_type": "protesis",
+      "measurement_data": {
+        "residual_limb_length": "15 cm",
+        "residual_limb_circumference": "25 cm",
+        "knee_height": "45 cm",
+        "ankle_height": "8 cm",
+        "foot_size": "42",
+        "casting_notes": "Residual limb berbentuk conical, distal end sensitive"
+      },
+      "notes": "Pengukuran untuk pembuatan protesis transtibial",
+      "created_by": 1,
+      "created_at": "2024-01-20 15:30:00"
+    }
+  ],
+
+  "services": [
+    {
+      "id": 1,
+      "uuid": "g7h8i9j0-k1l2-3456-ghij-789012345678",
+      "code": "KONSUL-001",
+      "name": "Konsultasi Orthotik Prostetik",
+      "description": "Konsultasi awal untuk assessment kebutuhan ortosis/protesis",
+      "service_type": "konsultasi",
+      "price": 150000.00,
+      "duration_days": null,
+      "is_active": true,
+      "created_at": "2024-01-15 08:00:00"
+    },
+    {
+      "id": 2,
+      "uuid": "h8i9j0k1-l2m3-4567-hijk-890123456789",
+      "code": "PROTESIS-TT-001",
+      "name": "Protesis Transtibial Basic",
+      "description": "Pembuatan protesis kaki bawah dengan socket supracondylar",
+      "service_type": "protesis",
+      "price": 8500000.00,
+      "duration_days": 14,
+      "is_active": true,
+      "created_at": "2024-01-15 08:00:00"
+    }
+  ],
+
+  "inventory_items": [
+    {
+      "id": 1,
+      "uuid": "i9j0k1l2-m3n4-5678-ijkl-901234567890",
+      "item_code": "MAT-RES-001",
+      "name": "Resin Laminating",
+      "category": "material",
+      "unit": "kg",
+      "current_stock": 25.5,
+      "min_stock": 5.0,
+      "cost_price": 125000.00,
+      "is_active": true,
+      "created_at": "2024-01-15 08:00:00"
+    },
+    {
+      "id": 2,
+      "uuid": "j0k1l2m3-n4o5-6789-jklm-012345678901",
+      "item_code": "COMP-FOOT-001",
+      "name": "Dynamic Response Foot",
+      "category": "component",
+      "unit": "pcs",
+      "current_stock": 8,
+      "min_stock": 2,
+      "cost_price": 1850000.00,
+      "is_active": true,
+      "created_at": "2024-01-15 08:00:00"
+    }
+  ],
+
+  "treatment_orders": [
+    {
+      "id": 1,
+      "uuid": "k1l2m3n4-o5p6-7890-klmn-123456789012",
+      "order_number": "ORDER-2024-001",
+      "patient_id": 1,
+      "consultation_id": 1,
+      "order_date": "2024-01-21",
+      "delivery_date": "2024-02-05",
+      "total_amount": 8650000.00,
+      "status": "production",
+      "notes": "Prioritas - pasien membutuhkan untuk mobilitas kerja",
+      "created_by": 2,
+      "created_at": "2024-01-21 10:00:00"
+    }
+  ],
+
+  "order_items": [
+    {
+      "id": 1,
+      "order_id": 1,
+      "service_id": 1,
+      "quantity": 1,
+      "unit_price": 150000.00,
+      "total_price": 150000.00,
+      "specifications": {
+        "consultation_type": "initial_assessment",
+        "duration": "60 menit"
+      },
+      "created_at": "2024-01-21 10:00:00"
+    },
+    {
+      "id": 2,
+      "order_id": 1,
+      "service_id": 2,
+      "quantity": 1,
+      "unit_price": 8500000.00,
+      "total_price": 8500000.00,
+      "specifications": {
+        "socket_type": "supracondylar",
+        "suspension": "supracondylar strap",
+        "foot_type": "dynamic_response",
+        "cosmetic_cover": "standard"
+      },
+      "created_at": "2024-01-21 10:00:00"
+    }
+  ],
+
+  "production_tracking": [
+    {
+      "id": 1,
+      "order_id": 1,
+      "production_stage": "design",
+      "notes": "Socket design completed, positive model ready",
+      "completed_by": 1,
+      "completed_at": "2024-01-22 11:00:00",
+      "created_at": "2024-01-22 11:00:00"
+    },
+    {
+      "id": 2,
+      "order_id": 1,
+      "production_stage": "fabrication",
+      "notes": "Lamination in progress",
+      "completed_by": null,
+      "completed_at": null,
+      "created_at": "2024-01-23 09:00:00"
+    }
+  ],
+
+  "payments": [
+    {
+      "id": 1,
+      "uuid": "l2m3n4o5-p6q7-8901-lmno-234567890123",
+      "order_id": 1,
+      "payment_date": "2024-01-21",
+      "payment_method": "transfer",
+      "amount": 4325000.00,
+      "reference_number": "TRF-2024-001",
+      "status": "completed",
+      "notes": "DP 50%",
+      "created_by": 2,
+      "created_at": "2024-01-21 14:30:00"
+    }
+  ]
+}

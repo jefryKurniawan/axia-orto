@@ -20,7 +20,7 @@
     
     <!-- logo -->
     <div class="flex-none w-56 flex flex-row items-center">
-      <img src="{{ asset('images/logo.png') }}" alt="Cleopatra Logo">
+      <img src="{{ asset('images/logo.png') }}" alt="Axia Orto Logo">
       {{-- <strong class="capitalize ml-1 flex-1">cleopatra</strong> --}}
 
       <button id="sliderBtn" class="flex-none text-right text-gray-900 hidden md:block">
@@ -378,7 +378,12 @@
       </a>
       <!-- end link -->
 
-      <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">apps</p>
+      <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">Patient Management</p>
+
+      <a href="#" class="mb-3 capitalize font-medium text-sm hover:text-teal-600 transition ease-in-out duration-500">
+        <i class="fad fa-computer-classic text-xs mr-2"></i>
+        Patients
+      </a>
 
       <!-- link -->
       <a href="./email.html" class="mb-3 capitalize font-medium text-sm hover:text-teal-600 transition ease-in-out duration-500">
@@ -423,8 +428,9 @@
       <!-- end link -->   
       
       
-      <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">UI Elements</p>
-
+      {{-- <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">UI Elements</p> --}}
+      <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">Consultation Module</p>
+      
       <!-- link -->
       <a href={{ route('typography') }} class="mb-3 capitalize font-medium text-sm hover:text-teal-600 transition ease-in-out duration-500">
         <i class="fad fa-text text-xs mr-2"></i>
@@ -453,6 +459,8 @@
         Content
       </a>
       <!-- end link -->
+
+      <p class="uppercase text-xs text-gray-600 mb-4 mt-4 tracking-wider">Service Catalog</p>
 
       <!-- link -->
       <a href="#" class="mb-3 capitalize font-medium text-sm hover:text-teal-600 transition ease-in-out duration-500">

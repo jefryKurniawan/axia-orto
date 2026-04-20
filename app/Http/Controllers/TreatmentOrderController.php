@@ -110,7 +110,7 @@ class TreatmentOrderController extends Controller
         $patients = Patient::all();
         $consultations = Consultation::where('status', 'completed')->get();
         $services = Service::where('is_active', true)->get();
-        $order->load('orderItems');
+        $order->load(['patient', 'orderItems.service']);
 
         return view('treatment-orders.edit', compact('order', 'patients', 'consultations', 'services'));
     }

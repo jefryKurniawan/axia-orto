@@ -13,7 +13,7 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        $items = InventoryItem::latest()->pagination(10);
+        $items = InventoryItem::latest()->paginate(10);
         return view('inventory.index', compact('items'));
     }
 
@@ -31,16 +31,17 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'item_code' => 'required|unique:inventory_items',
+            'code' => 'required|unique:inventory_items',
             'name' => 'required|string|max:255',
-            'category' => 'required|in:material,component,tool',
+            'category' => 'required|in:bahan_baku,komponen,alat_jadi',
             'unit' => 'required|string|max:20',
-            'current_stock' => 'required|numeric|min:0',
-            'min_stock' => 'required|numeric|min:0',
-            'cost_price' => 'required|numeric|min:0',
+            'quantity' => 'required|numeric|min:0',
+            'reorder_level' => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0',
             'is_active' => 'boolean'
         ]);
 
+        $validated['uuid'] = (string) \Illuminate\Support\Str::uuid();
         InventoryItem::create($validated);
 
         return redirect()->route('inventory.index')
@@ -50,46 +51,46 @@ class InventoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(InventoryItem $inventory)
     {
-        return view('inventory.show', compact('item'));
+        return view('inventory.show', ['item' => $inventory]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(InventoryItem $inventory)
     {
-        return view('inventory.edit', compact('item'));
+        return view('inventory.edit', ['item' => $inventory]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, InventoryItem $item)
+    public function update(Request $request, InventoryItem $inventory)
     {
         $validated = $request->validate([
-            'item_code' => ['required', Rule::unique('inventory_items')->ignore($item->id)],
+            'code' => ['required', Rule::unique('inventory_items')->ignore($inventory->id)],
             'name' => 'required|string|max:255',
-            'category' => 'required|in:material,component,tool',
+            'category' => 'required|in:bahan_baku,komponen,alat_jadi',
             'unit' => 'required|string|max:20',
-            'current_stock' => 'required|numeric|min:0',
-            'min_stock' => 'required|numeric|min:0',
-            'cost_price' => 'required|numeric|min:0',
+            'quantity' => 'required|numeric|min:0',
+            'reorder_level' => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0',
             'is_active' => 'boolean'
         ]);
 
-        $item->update($validated);
+        $inventory->update($validated);
 
-        return redirect()->route('inventory.show', $item)
+        return redirect()->route('inventory.show', $inventory)
             ->with('success', 'Item inventory berhasil diperbarui.');
     }
 
-    public function toggleStatus(InventoryItem $item)
+    public function toggleStatus(InventoryItem $inventory)
     {
-        $item->update(['is_active' => !$item->is_active]);
+        $inventory->update(['is_active' => !$inventory->is_active]);
 
-        $status = $item->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        $status = $inventory->is_active ? 'diaktifkan' : 'dinonaktifkan';
         return redirect()->back()
             ->with('success', "Item inventory berhasil $status.");
     }
@@ -97,8 +98,9 @@ class InventoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(InventoryItem $inventory)
     {
-        //
+        $inventory->delete();
+        return redirect()->route('inventory.index')->with('success', 'Item berhasil dihapus');
     }
 }

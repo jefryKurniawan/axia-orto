@@ -15,8 +15,10 @@ return new class extends Migration
             $table->foreignId('consultation_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('order_number')->unique();
             $table->date('order_date');
+            $table->date('delivery_date')->nullable();
             $table->enum('status', ['pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
             $table->decimal('total_amount', 15, 2)->default(0);
+            $table->text('notes')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
 

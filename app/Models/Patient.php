@@ -5,13 +5,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\Traits\Cacheable;
 use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
 use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
-    use HasFactory, Cacheable;
+    use HasFactory, Cacheable, SoftDeletes;
 
     protected $fillable = [
         'uuid',
@@ -32,6 +34,21 @@ class Patient extends Model
         'date_of_birth' => 'date',
         'allergies' => 'array'
     ];
+
+    /**
+     * Scope untuk filter pencarian
+     */
+    public function scopeFilter(Builder $query, array $filters): Builder
+    {
+        return $query->when($filters['search'] ?? null, function (Builder $query, $search) {
+            $query->where(function (Builder $query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('medical_record_number', 'like', '%' . $search . '%')
+                    ->orWhere('nik', 'like', '%' . $search . '%')
+                    ->orWhere('phone', 'like', '%' . $search . '%');
+            });
+        });
+    }
 
     // Relationships
     public function consultations()

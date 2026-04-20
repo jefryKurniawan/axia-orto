@@ -16,10 +16,13 @@ class ProductionTracking extends Model
     protected $table = 'production_tracking';
 
     protected $fillable = [
-        'order_id',
-        'production_stage',
+        'uuid',
+        'treatment_order_id',
+        'step',
+        'status',
         'notes',
-        'completed_by',
+        'assigned_to',
+        'started_at',
         'completed_at',
     ];
 
@@ -30,7 +33,7 @@ class ProductionTracking extends Model
     // Relationships
     public function order()
     {
-        return $this->belongsTo(TreatmentOrder::class);
+        return $this->belongsTo(TreatmentOrder::class, 'treatment_order_id');
     }
 
     public function completedBy()

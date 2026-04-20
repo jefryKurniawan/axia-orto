@@ -12,7 +12,7 @@ class OrderItem extends Model
     use HasFactory, Cacheable;
 
     protected $fillable = [
-        'order_id',
+        'treatment_order_id',
         'service_id',
         'quantity',
         'unit_price',
@@ -30,7 +30,7 @@ class OrderItem extends Model
     // Relationships
     public function order()
     {
-        return $this->belongsTo(TreatmentOrder::class);
+        return $this->belongsTo(TreatmentOrder::class, 'treatment_order_id');
     }
 
     public function service()

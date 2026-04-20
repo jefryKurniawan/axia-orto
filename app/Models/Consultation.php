@@ -4,16 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Traits\Cacheable;
-use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
-use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Consultation extends Model
 {
-    use HasFactory, Cacheable;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'uuid',
         'patient_id',
         'doctor_id',
         'consultation_date',
@@ -23,6 +20,7 @@ class Consultation extends Model
         'notes',
         'follow_up_date',
         'status',
+        'uuid'
     ];
 
     protected $casts = [
@@ -30,7 +28,15 @@ class Consultation extends Model
         'follow_up_date' => 'date',
     ];
 
-    // Relationships
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($consultation) {
+            $consultation->uuid = (string) \Illuminate\Support\Str::uuid();
+        });
+    }
+
     public function patient()
     {
         return $this->belongsTo(Patient::class);
@@ -41,56 +47,30 @@ class Consultation extends Model
         return $this->belongsTo(User::class, 'doctor_id');
     }
 
-    public function measurements()
+    public function getStatusBadgeAttribute()
     {
-        return $this->hasMany(PatientMeasurement::class);
+        return match ($this->status) {
+            'scheduled' => '<span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Dijadwalkan</span>',
+            'in_progress' => '<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Berlangsung</span>',
+            'completed' => '<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Selesai</span>',
+            'cancelled' => '<span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Dibatalkan</span>',
+            default => '<span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Unknown</span>',
+        };
     }
 
-    public function treatmentOrders()
+    public function getStatusColorAttribute()
     {
-        return $this->hasMany(TreatmentOrder::class);
+        return match ($this->status) {
+            'scheduled' => 'yellow',
+            'in_progress' => 'blue',
+            'completed' => 'green',
+            'cancelled' => 'red',
+            default => 'gray',
+        };
     }
 
-    // Scopes
-    public function scopeScheduled($query)
+    public function getFormattedDateAttribute()
     {
-        return $query->where('status', 'scheduled');
-    }
-
-    public function scopeCompleted($query)
-    {
-        return $query->where('status', 'completed');
-    }
-
-    public function scopeToday($query)
-    {
-        return $query->whereDate('consultation_date', today());
-    }
-
-    public function scopeByDoctor($query, $doctorId)
-    {
-        return $query->where('doctor_id', $doctorId);
-    }
-
-    // Cache Methods
-    public static function getCachedTodayConsultations()
-    {
-        return Cache::tags(['Consultation'])->remember('consultations.today', 900, function () {
-            return static::today()->with(['patient', 'doctor'])->get();
-        });
-    }
-
-    public static function getCachedDoctorSchedule($doctorId, $date = null)
-    {
-        $date = $date ?: today();
-        $cacheKey = "doctor_schedule.{$doctorId}.{$date}";
-
-        return Cache::tags(['Consultation'])->remember($cacheKey, 1800, function () use ($doctorId, $date) {
-            return static::where('doctor_id', $doctorId)
-                ->whereDate('consultation_date', $date)
-                ->with('patient')
-                ->orderBy('consultation_date')
-                ->get();
-        });
+        return $this->consultation_date->format('d M Y H:i');
     }
 }

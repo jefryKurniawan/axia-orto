@@ -6,8 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Cacheable;
-use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
-use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
+use App\Models\Patient;
+use App\Models\Consultation;
+use App\Models\User;
 
 class TreatmentOrder extends Model
 {
@@ -33,10 +34,7 @@ class TreatmentOrder extends Model
     ];
 
     // Relationships
-    public function patient()
-    {
-        return $this->belongsTo(Patient::class);
-    }
+
 
     public function consultation()
     {
@@ -134,4 +132,6 @@ class TreatmentOrder extends Model
             ->latest()
             ->first();
     }
+
+
 }

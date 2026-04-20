@@ -1,5 +1,4 @@
 <?php
-// app/Models/User.php
 
 namespace App\Models;
 
@@ -7,16 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 // use Laravel\Sanctum\HasApiTokens;
-use App\Models\Traits\Cacheable;
-use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
-use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, Cacheable;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
-        'uuid',
         'name',
         'email',
         'password',
@@ -33,113 +28,41 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
         'is_active' => 'boolean',
     ];
 
-    // Relationships
     public function consultations()
     {
         return $this->hasMany(Consultation::class, 'doctor_id');
     }
 
-    public function treatmentOrders()
-    {
-        return $this->hasMany(TreatmentOrder::class, 'created_by');
-    }
-
-    public function patientMeasurements()
+    public function createdMeasurements()
     {
         return $this->hasMany(PatientMeasurement::class, 'created_by');
     }
 
-    public function payments()
+    public function orders()
     {
-        return $this->hasMany(Payment::class, 'created_by');
-    }
-
-    public function productionTrackings()
-    {
-        return $this->hasMany(ProductionTracking::class, 'completed_by');
-    }
-
-    // Scopes
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
+        return $this->hasMany(TreatmentOrder::class, 'created_by');
     }
 
     public function scopeDoctors($query)
     {
-        return $query->where('role', 'dokter');
+        return $query->where('role', 'dokter')->where('is_active', true);
     }
 
     public function scopeStaff($query)
     {
-        return $query->where('role', 'staf_klinik');
+        return $query->where('role', 'staf_klinik')->where('is_active', true);
     }
 
-    public function scopeAdmins($query)
+    public function getRoleBadgeAttribute()
     {
-        return $query->where('role', 'admin');
-    }
-
-    // Cache Methods
-    public static function getCachedActiveDoctors()
-    {
-        $key = 'user:active_doctors';
-        $callback = function () {
-            return static::doctors()->active()->get();
+        return match ($this->role) {
+            'admin' => '<span class="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded">Admin</span>',
+            'dokter' => '<span class="bg-green-500 text-white text-xs font-medium px-2.5 py-0.5 rounded">Dokter</span>',
+            'staf_klinik' => '<span class="bg-yellow-500 text-white text-xs font-medium px-2.5 py-0.5 rounded">Staf Klinik</span>',
+            default => '<span class="bg-gray-500 text-white text-xs font-medium px-2.5 py-0.5 rounded">Unknown</span>',
         };
-
-        return self::safeCacheRemember(['User'], $key, 3600, $callback);
-    }
-
-    public static function getCachedUserStats()
-    {
-        $key = 'user:user_stats';
-        $callback = function () {
-            return [
-                'total' => static::count(),
-                'doctors' => static::doctors()->active()->count(),
-                'admins' => static::where('role', 'admin')->active()->count(),
-                'staff' => static::where('role', 'staf_klinik')->active()->count(),
-            ];
-        };
-
-        return self::safeCacheRemember(['User'], $key, 1800, $callback);
-    }
-
-    public static function getCachedUsersByRole($role)
-    {
-        $key = "users_role_{$role}";
-        $callback = function () use ($role) {
-            return static::where('role', $role)->active()->get();
-        };
-
-        return self::safeCacheRemember(['User'], $key, 1800, $callback);
-    }
-
-    protected static function safeCacheRemember(array $tags, string $key, int $ttl, callable $callback)
-    {
-        try {
-            // Coba dengan tagging terlebih dahulu
-            if (self::supportsTagging()) {
-                return Cache::tags($tags)->remember($key, $ttl, $callback);
-            } else {
-                // Fallback tanpa tagging
-                return Cache::remember($key, $ttl, $callback);
-            }
-        } catch (\Exception $e) {
-            // Jika ada error, fallback ke tanpa cache atau tanpa tagging
-            \Log::warning("Cache error: {$e->getMessage()}, using fallback");
-            return Cache::remember($key, $ttl, $callback);
-        }
-    }
-
-    protected static function supportsTagging(): bool
-    {
-        $driver = config('cache.default');
-        return in_array($driver, ['redis', 'memcached', 'array']);
     }
 }

@@ -15,20 +15,20 @@ class InventoryItem extends Model
 
     protected $fillable = [
         'uuid',
-        'item_code',
+        'code',
         'name',
         'category',
         'unit',
-        'current_stock',
-        'min_stock',
-        'cost_price',
+        'quantity',
+        'reorder_level',
+        'price',
         'is_active',
     ];
 
     protected $casts = [
-        'current_stock' => 'decimal:2',
-        'min_stock' => 'decimal:2',
-        'cost_price' => 'decimal:2',
+        'quantity' => 'decimal:2',
+        'reorder_level' => 'decimal:2',
+        'price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
@@ -45,14 +45,14 @@ class InventoryItem extends Model
 
     public function scopeLowStock($query)
     {
-        return $query->whereRaw('current_stock <= min_stock')
+        return $query->whereRaw('quantity <= reorder_level')
             ->where('is_active', true);
     }
 
     public function scopeSearch($query, $search)
     {
         return $query->where('name', 'like', "%{$search}%")
-            ->orWhere('item_code', 'like', "%{$search}%");
+            ->orWhere('code', 'like', "%{$search}%");
     }
 
     // Cache Methods
@@ -79,7 +79,7 @@ class InventoryItem extends Model
                 'total_items' => static::count(),
                 'active_items' => static::active()->count(),
                 'low_stock_count' => static::lowStock()->count(),
-                'total_inventory_value' => static::active()->sum(\DB::raw('current_stock * cost_price')),
+                'total_inventory_value' => static::active()->sum(\DB::raw('quantity * price')),
                 'by_category' => static::selectRaw('category, count(*) as count')
                     ->groupBy('category')
                     ->pluck('count', 'category'),
@@ -90,12 +90,12 @@ class InventoryItem extends Model
     // Business Logic
     public function isLowStock()
     {
-        return $this->current_stock <= $this->min_stock;
+        return $this->quantity <= $this->reorder_level;
     }
 
-    public function updateStock($quantity)
+    public function updateStock($qty)
     {
-        $this->current_stock += $quantity;
+        $this->quantity += $qty;
         return $this->save();
     }
 }

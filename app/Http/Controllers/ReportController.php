@@ -18,91 +18,56 @@ class ReportController extends Controller
         return view('reports.index');
     }
 
-    public function daily()
+    public function exportPdf(Request $request)
     {
-        $date = request('date', Carbon::today()->toDateString());
-        $selectedDate = Carbon::parse($date);
+        $type = $request->get('type', 'patients');
+        $title = 'LAPORAN DATA';
+        $headers = [];
+        $data = [];
+        $period = 'Semua Waktu';
 
-        $stats = [
-            'consultations' => Consultation::whereDate('consultation_date', $selectedDate)->count(),
-            'new_patients' => Patient::whereDate('created_at', $selectedDate)->count(),
-            'new_orders' => TreatmentOrder::whereDate('order_date', $selectedDate)->count(),
-            'payments' => Payment::whereDate('payment_date', $selectedDate)
-                ->where('status', 'completed')
-                ->sum('amount')
-        ];
+        if ($type === 'patients') {
+            $title = 'LAPORAN DATA PASIEN';
+            $headers = ['Nama Pasien', 'MRN', 'L/P', 'Usia', 'No. HP', 'Asuransi'];
+            $patients = Patient::latest()->get();
+            foreach ($patients as $p) {
+                $data[] = [
+                    $p->name,
+                    $p->medical_record_number,
+                    $p->gender,
+                    Carbon::parse($p->date_of_birth)->age . ' Thn',
+                    $p->phone,
+                    $p->insurance_provider ?? 'Umum'
+                ];
+            }
+        } elseif ($type === 'consultations') {
+            $title = 'LAPORAN JADWAL KONSULTASI';
+            $headers = ['Tanggal', 'Pasien', 'Dokter', 'Keluhan', 'Status'];
+            $consultations = Consultation::with(['patient', 'doctor'])->latest()->get();
+            foreach ($consultations as $c) {
+                $data[] = [
+                    Carbon::parse($c->consultation_date)->format('d/m/Y'),
+                    $c->patient->name ?? '-',
+                    $c->doctor->name ?? '-',
+                    $c->complaint,
+                    strtoupper($c->status)
+                ];
+            }
+        } elseif ($type === 'payments') {
+            $title = 'LAPORAN PENDAPATAN & PEMBAYARAN';
+            $headers = ['Tanggal', 'No. Transaksi', 'Pasien', 'Metode', 'Total Bayar'];
+            $payments = Payment::with('order.patient')->latest()->get();
+            foreach ($payments as $p) {
+                $data[] = [
+                    $p->created_at->format('d/m/Y'),
+                    $p->payment_number,
+                    $p->order->patient->name ?? '-',
+                    strtoupper($p->payment_method),
+                    'Rp ' . number_format($p->amount_paid, 0, ',', '.')
+                ];
+            }
+        }
 
-        return view('reports.daily', compact('stats', 'selectedDate'));
-    }
-
-
-    public function monthly()
-    {
-        $month = request('month', Carbon::now()->month);
-        $year = request('year', Carbon::now()->year);
-
-        $stats = [
-            'total_consultations' => Consultation::whereYear('consultation_date', $year)
-                ->whereMonth('consultation_date', $month)
-                ->count(),
-            'new_patients' => Patient::whereYear('created_at', $year)
-                ->whereMonth('created_at', $month)
-                ->count(),
-            'total_orders' => TreatmentOrder::whereYear('order_date', $year)
-                ->whereMonth('order_date', $month)
-                ->count(),
-            'total_revenue' => Payment::whereYear('payment_date', $year)
-                ->whereMonth('payment_date', $month)
-                ->where('status', 'completed')
-                ->sum('amount')
-        ];
-
-        // Monthly trend data
-        $monthlyTrends = Payment::select(
-            DB::raw('MONTH(payment_date) as month'),
-            DB::raw('SUM(amount) as total')
-        )
-            ->whereYear('payment_date', $year)
-            ->where('status', 'completed')
-            ->groupBy('month')
-            ->get();
-
-        return view('reports.monthly', compact('stats', 'month', 'year', 'monthlyTrends'));
-    }
-
-    public function patients()
-    {
-        $patients = Patient::withCount(['consultations', 'treatmentOrders'])
-            ->latest()
-            ->paginate(20);
-
-        $stats = [
-            'total' => Patient::count(),
-            'with_consultations' => Patient::has('consultations')->count(),
-            'with_orders' => Patient::has('treatmentOrders')->count(),
-        ];
-
-        return view('reports.patients', compact('patients', 'stats'));
-    }
-
-    public function revenue()
-    {
-        $startDate = request('start_date', Carbon::now()->subMonth()->toDateString());
-        $endDate = request('end_date', Carbon::today()->toDateString());
-
-        $revenueData = Payment::whereBetween('payment_date', [$startDate, $endDate])
-            ->where('status', 'completed')
-            ->select(
-                'payment_method',
-                DB::raw('SUM(amount) as total'),
-                DB::raw('COUNT(*) as count')
-            )
-            ->groupBy('payment_method')
-            ->get();
-
-        $totalRevenue = $revenueData->sum('total');
-        $totalTransactions = $revenueData->sum('count');
-
-        return view('reports.revenue', compact('revenueData', 'totalRevenue', 'totalTransactions', 'startDate', 'endDate'));
+        return view('reports.print', compact('title', 'headers', 'data', 'period'));
     }
 }
