@@ -70,10 +70,7 @@ class ConsultationController extends Controller
      */
     public function edit(Consultation $consultation)
     {
-        $patients = Patient::all();
-        $doctors = User::where('role', 'dokter')->where('is_active', true)->get();
-
-        return view('consultations.edit', compact('consultation', 'patients', 'doctors'));
+        return view('consultations.edit', compact('consultation'));
     }
 
     /**

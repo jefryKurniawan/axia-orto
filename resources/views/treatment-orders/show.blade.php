@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Pesanan #' . $order->order_number)
+@section('title', 'Detail Pesanan #' . $treatment_order->order_number)
 
 @section('content')
 <div class="space-y-8 pb-20">
@@ -12,7 +12,7 @@
             </a>
             <div>
                 <div class="flex items-center gap-3">
-                    <h1 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Pesanan #{{ $order->order_number }}</h1>
+                    <h1 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Pesanan #{{ $treatment_order->order_number }}</h1>
                     @php
                         $statusColors = [
                             'pending' => 'bg-slate-100 text-slate-600',
@@ -21,15 +21,15 @@
                             'cancelled' => 'bg-rose-100 text-rose-700',
                         ];
                     @endphp
-                    <span class="px-3 py-1 {{ $statusColors[$order->status] ?? 'bg-slate-100 text-slate-600' }} rounded-full text-[10px] font-black uppercase tracking-widest">
-                        {{ $order->status }}
+                    <span class="px-3 py-1 {{ $statusColors[$treatment_order->status] ?? 'bg-slate-100 text-slate-600' }} rounded-full text-[10px] font-black uppercase tracking-widest">
+                        {{ $treatment_order->status }}
                     </span>
                 </div>
-                <p class="text-slate-500 text-xs mt-1">Dibuat pada {{ $order->created_at->format('d M Y, H:i') }} oleh {{ $order->createdBy->name ?? 'System' }}</p>
+                <p class="text-slate-500 text-xs mt-1">Dibuat pada {{ $treatment_order->created_at ? $treatment_order->created_at->format('d M Y, H:i') : 'N/A' }} oleh {{ $treatment_order->createdBy->name ?? 'System' }}</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('treatment-orders.edit', $order) }}" class="px-5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm">
+            <a href="{{ route('treatment-orders.edit', ['treatment_order' => $treatment_order->id]) }}" class="px-5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm">
                 <i class="fa-solid fa-pen-to-square mr-2 text-emerald-500"></i> Edit Pesanan
             </a>
             <button class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg">
@@ -55,7 +55,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50 dark:divide-slate-800/50">
-                            @foreach($order->orderItems as $item)
+                            @foreach($treatment_order->orderItems as $item)
                             <tr>
                                 <td class="py-5">
                                     <p class="text-sm font-bold text-slate-900 dark:text-white">{{ $item->service->name }}</p>
@@ -81,7 +81,7 @@
                                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Tagihan</p>
                                 </td>
                                 <td class="pt-8 text-right">
-                                    <p class="text-2xl font-black text-indigo-600">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                                    <p class="text-2xl font-black text-indigo-600">Rp {{ number_format($treatment_order->total_amount, 0, ',', '.') }}</p>
                                 </td>
                             </tr>
                         </tfoot>
@@ -94,7 +94,7 @@
                 <h2 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">Catatan Klinis / Produksi</h2>
                 <div class="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
                     <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed italic">
-                        "{{ $order->notes ?? 'Tidak ada catatan tambahan untuk pesanan ini.' }}"
+                        "{{ $treatment_order->notes ?? 'Tidak ada catatan tambahan untuk pesanan ini.' }}"
                     </p>
                 </div>
             </div>
@@ -105,32 +105,40 @@
             <!-- Patient Info -->
             <div class="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-xl shadow-indigo-500/20">
                 <h3 class="text-xs font-black uppercase tracking-[0.2em] text-indigo-200 mb-6">Informasi Pasien</h3>
+                
+                @if($treatment_order->patient)
                 <div class="flex items-center gap-4 mb-8">
                     <div class="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center text-2xl font-black">
-                        {{ strtoupper(substr($order->patient->name, 0, 1)) }}
+                        {{ strtoupper(substr($treatment_order->patient->name, 0, 1)) }}
                     </div>
                     <div>
-                        <h4 class="text-xl font-black uppercase leading-tight">{{ $order->patient->name }}</h4>
-                        <p class="text-[10px] font-bold text-indigo-200 mt-1">{{ $order->patient->medical_record_number }}</p>
+                        <h4 class="text-xl font-black uppercase leading-tight">{{ $treatment_order->patient->name }}</h4>
+                        <p class="text-[10px] font-bold text-indigo-200 mt-1">{{ $treatment_order->patient->medical_record_number }}</p>
                     </div>
                 </div>
                 <div class="space-y-4 text-xs font-bold">
                     <div class="flex justify-between border-b border-white/10 pb-4">
                         <span class="text-indigo-200">Jenis Kelamin</span>
-                        <span>{{ $order->patient->gender == 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
+                        <span>{{ $treatment_order->patient->gender == 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
                     </div>
                     <div class="flex justify-between border-b border-white/10 pb-4">
                         <span class="text-indigo-200">Kontak</span>
-                        <span>{{ $order->patient->phone }}</span>
+                        <span>{{ $treatment_order->patient->phone }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-indigo-200">Asuransi</span>
-                        <span class="uppercase">{{ $order->patient->insurance_type }}</span>
+                        <span class="uppercase">{{ $treatment_order->patient->insurance_type }}</span>
                     </div>
                 </div>
-                <a href="{{ route('patients.show', $order->patient) }}" class="w-full mt-8 py-3 bg-white text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-center block hover:bg-indigo-50 transition-all">
+                <a href="{{ route('patients.show', $treatment_order->patient) }}" class="w-full mt-8 py-3 bg-white text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-center block hover:bg-indigo-50 transition-all">
                     Lihat Rekam Medis
                 </a>
+                @else
+                <div class="p-6 bg-rose-500/20 rounded-2xl border border-rose-400/30 text-center">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl text-rose-300 mb-2"></i>
+                    <p class="text-sm font-bold text-rose-200">Data pasien tidak ditemukan</p>
+                </div>
+                @endif
             </div>
 
             <!-- Delivery Tracker -->
@@ -143,27 +151,27 @@
                         </div>
                         <div>
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Dibuat</p>
-                            <p class="text-xs font-bold text-slate-900 dark:text-white">{{ $order->order_date->format('d M Y') }}</p>
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">{{ $treatment_order->order_date->format('d M Y') }}</p>
                         </div>
                     </div>
                     
                     <div class="relative flex items-center gap-4">
-                        <div class="h-9 w-9 rounded-full {{ $order->status != 'pending' ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-800' }} border-4 border-white dark:border-slate-900 flex items-center justify-center text-white z-10">
+                        <div class="h-9 w-9 rounded-full {{ $treatment_order->status != 'pending' ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-800' }} border-4 border-white dark:border-slate-900 flex items-center justify-center text-white z-10">
                             <i class="fa-solid fa-industry text-[10px]"></i>
                         </div>
                         <div>
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sedang Diproses</p>
-                            <p class="text-xs font-bold text-slate-900 dark:text-white">{{ $order->status == 'in_progress' ? 'Aktif' : 'Menunggu' }}</p>
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">{{ $treatment_order->status == 'in_progress' ? 'Aktif' : 'Menunggu' }}</p>
                         </div>
                     </div>
 
                     <div class="relative flex items-center gap-4">
-                        <div class="h-9 w-9 rounded-full {{ $order->status == 'completed' ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800' }} border-4 border-white dark:border-slate-900 flex items-center justify-center text-white z-10">
+                        <div class="h-9 w-9 rounded-full {{ $treatment_order->status == 'completed' ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800' }} border-4 border-white dark:border-slate-900 flex items-center justify-center text-white z-10">
                             <i class="fa-solid fa-truck-ramp-box text-[10px]"></i>
                         </div>
                         <div>
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estimasi Penyerahan</p>
-                            <p class="text-xs font-bold text-slate-900 dark:text-white">{{ $order->delivery_date ? $order->delivery_date->format('d M Y') : 'TBD' }}</p>
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">{{ $treatment_order->delivery_date ? $treatment_order->delivery_date->format('d M Y') : 'TBD' }}</p>
                         </div>
                     </div>
                 </div>
@@ -173,7 +181,7 @@
             <div class="bg-amber-50 dark:bg-amber-500/5 rounded-[2.5rem] p-8 border border-amber-100 dark:border-amber-900/30">
                 <h3 class="text-xs font-black uppercase tracking-[0.2em] text-amber-600 mb-4">Status Pembayaran</h3>
                 @php
-                    $isPaid = $order->payments->where('status', 'paid')->count() > 0;
+                    $isPaid = $treatment_order->payments->where('status', 'paid')->count() > 0;
                 @endphp
                 @if($isPaid)
                 <div class="flex items-center gap-3 text-emerald-600">

@@ -5,7 +5,7 @@
         </a>
         <div>
             <h1 class="text-3xl font-bold text-slate-900">Edit Item Inventori</h1>
-            <p class="text-slate-500 mt-1">Perbarui detail stok dan harga untuk {{ $name }}.</p>
+            <p class="text-slate-500 mt-1">Perbarui detail stok dan harga untuk {{ $item->name }}.</p>
         </div>
     </div>
 
@@ -24,8 +24,8 @@
 
                 <div class="space-y-2">
                     <label class="text-sm font-semibold text-slate-700">Kode Barang <span class="text-rose-500">*</span></label>
-                    <input wire:model="item_code" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all bg-slate-50">
-                    @error('item_code') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    <input wire:model="code" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all bg-slate-50">
+                    @error('code') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-2">
@@ -35,6 +35,7 @@
                         <option value="component">Komponen</option>
                         <option value="tool">Alat</option>
                     </select>
+                    @error('category') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-2">
@@ -53,11 +54,13 @@
                 <div class="grid grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="text-sm font-semibold text-slate-700">Stok Saat Ini</label>
-                        <input wire:model="current_stock" type="number" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all">
+                        <input wire:model="quantity" type="number" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all">
+                        @error('quantity') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div class="space-y-2">
                         <label class="text-sm font-semibold text-slate-700">Stok Minimum</label>
-                        <input wire:model="min_stock" type="number" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all">
+                        <input wire:model="reorder_level" type="number" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all">
+                        @error('reorder_level') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
@@ -66,14 +69,11 @@
                 <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center">
                     <i class="fa-solid fa-tags mr-3 text-amber-500"></i> Harga & Nilai
                 </h2>
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6">
                     <div class="space-y-2">
-                        <label class="text-sm font-semibold text-slate-700">Harga Beli (Rp)</label>
-                        <input wire:model="cost_price" type="number" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-semibold text-slate-700">Harga Jual (Rp)</label>
-                        <input wire:model="selling_price" type="number" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all">
+                        <label class="text-sm font-semibold text-slate-700">Harga (Rp)</label>
+                        <input wire:model="price" type="number" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all">
+                        @error('price') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
@@ -83,6 +83,7 @@
             <div class="space-y-2">
                 <label class="text-sm font-semibold text-slate-700">Deskripsi Barang</label>
                 <textarea wire:model="description" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"></textarea>
+                @error('description') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
             </div>
         </div>
 

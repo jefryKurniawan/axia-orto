@@ -1,6 +1,6 @@
 <?php
 
-// service Edit yang gak kepake
+// service Edit yang kepake
 
 namespace App\Livewire\Services;
 
@@ -18,15 +18,18 @@ class ServicesEdit extends Component
     public $duration_days;
     public $is_active;
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        'code' => 'required|string|unique:services,code',
-        'service_type' => 'required|in:konsultasi,ortosis,protesis,terapi,alat',
-        'price' => 'required|numeric|min:0',
-        'duration_days' => 'nullable|integer|min:0',
-        'description' => 'nullable|string',
-        'is_active' => 'boolean',
-    ];
+    protected function rules()
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|unique:services,code,' . $this->service->id,
+            'service_type' => 'required|in:konsultasi,ortosis,protesis,terapi,alat',
+            'price' => 'required|numeric|min:0',
+            'duration_days' => 'nullable|integer|min:0',
+            'description' => 'nullable|string',
+            'is_active' => 'boolean',
+        ];
+    }
 
     public function mount(Service $service)
     {

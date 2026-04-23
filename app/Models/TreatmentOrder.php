@@ -34,7 +34,10 @@ class TreatmentOrder extends Model
     ];
 
     // Relationships
-
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class);
+    }
 
     public function consultation()
     {
@@ -132,6 +135,4 @@ class TreatmentOrder extends Model
             ->latest()
             ->first();
     }
-
-
 }

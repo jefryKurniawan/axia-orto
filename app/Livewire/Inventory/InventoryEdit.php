@@ -9,27 +9,27 @@ class InventoryEdit extends Component
 {
     public InventoryItem $item;
     public $name;
-    public $item_code;
+    public $code;
     public $category;
     public $unit;
-    public $min_stock;
-    public $current_stock;
-    public $cost_price;
-    public $selling_price;
+    public $quantity;
+    public $reorder_level;
+    public $price;
     public $description;
+    public $is_active = true;
 
     protected function rules()
     {
         return [
             'name' => 'required|string|max:255',
-            'item_code' => 'required|string|unique:inventory_items,item_code,' . $this->item->id,
-            'category' => 'required|in:material,component,tool',
+            'code' => 'required|string|unique:inventory_items,code,' . $this->item->id,
+            'category' => 'required|string|max:50',
             'unit' => 'required|string|max:20',
-            'min_stock' => 'required|numeric|min:0',
-            'current_stock' => 'required|numeric|min:0',
-            'cost_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
+            'quantity' => 'required|numeric|min:0',
+            'reorder_level' => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -37,14 +37,14 @@ class InventoryEdit extends Component
     {
         $this->item = $item;
         $this->name = $item->name;
-        $this->item_code = $item->item_code;
+        $this->code = $item->code;
         $this->category = $item->category;
         $this->unit = $item->unit;
-        $this->min_stock = $item->min_stock;
-        $this->current_stock = $item->current_stock;
-        $this->cost_price = $item->cost_price;
-        $this->selling_price = $item->selling_price;
+        $this->quantity = $item->quantity;
+        $this->reorder_level = $item->reorder_level;
+        $this->price = $item->price;
         $this->description = $item->description;
+        $this->is_active = $item->is_active;
     }
 
     public function save()
@@ -53,17 +53,17 @@ class InventoryEdit extends Component
 
         $this->item->update([
             'name' => $this->name,
-            'item_code' => $this->item_code,
+            'code' => $this->code,
             'category' => $this->category,
             'unit' => $this->unit,
-            'min_stock' => $this->min_stock,
-            'current_stock' => $this->current_stock,
-            'cost_price' => $this->cost_price,
-            'selling_price' => $this->selling_price,
+            'quantity' => $this->quantity,
+            'reorder_level' => $this->reorder_level,
+            'price' => $this->price,
             'description' => $this->description,
+            'is_active' => $this->is_active,
         ]);
 
-        session()->flash('success', 'Barang berhasil diperbarui.');
+        session()->flash('success', 'Item inventori berhasil diperbarui.');
         return redirect()->route('inventory.index');
     }
 

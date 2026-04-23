@@ -378,7 +378,7 @@ CREATE TABLE production_orders (
 -- Tabel payments
 CREATE TABLE payments (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    uuid CHAR(36) UNIQUE NOT NULL DEFAULT (UUID()),saya ada error "Undefined type 'App\Models\InventoryItem'." di InventoryTransaction.php di code "return $this->belongsTo(InventoryItem::class, 'inventory_item_id');", dan ada error "Undefined type 'App\Models\InventoryItem'." pada InventoryTransactionController.php di code " $item = InventoryItem::findOrFail($validatedData['inventory_item_id']);", dan ada error juga ini "Undefined type 'App\Models\Supplier'." di file InventoryIte.php pada baris ini "return $this->belongsTo(Supplier::class, 'supplier_id');
+    uuid CHAR(36) UNIQUE NOT NULL DEFAULT (UUID()),saya ada error "Undefined type 'App\Models\InventoryItem'." di InventoryTransaction.php di code "return $this->belongsTo(InventoryItem::class, 'inventoryu_item_id');", dan ada error "Undefined type 'App\Models\InventoryItem'." pada InventoryTransactionController.php di code " $item = InventoryItem::findOrFail($validatedData['inventory_item_id']);", dan ada error juga ini "Undefined type 'App\Models\Supplier'." di file InventoryIte.php pada baris ini "return $this->belongsTo(Supplier::class, 'supplier_id');
 }" dan lagi error ini "Undefined type 'App\Models\InventoryItem'." pada file ini nventoryItemController.php dengan rata-rata error seperti ini "Undefined type 'App\Models\InventoryItem'." bantu saya kenapa error apakah ada yang salah pada code saya atau bagaimana
 
     payment_number VARCHAR(50) UNIQUE NOT NULL,

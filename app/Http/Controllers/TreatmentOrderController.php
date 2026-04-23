@@ -96,29 +96,28 @@ class TreatmentOrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(TreatmentOrder $order)
-    {
-        $order->load(['patient', 'consultation', 'orderItems.service', 'createdBy']);
-        return view('treatment-orders.show', compact('order'));
-    }
+    public function show(TreatmentOrder $treatment_order)
+{
+    $treatment_order->load(['patient', 'consultation', 'orderItems.service', 'createdBy']);
+    return view('treatment-orders.show', compact('treatment_order'));
+}
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(TreatmentOrder $order)
+    public function edit(TreatmentOrder $treatment_order)
     {
         $patients = Patient::all();
         $consultations = Consultation::where('status', 'completed')->get();
         $services = Service::where('is_active', true)->get();
-        $order->load(['patient', 'orderItems.service']);
-
-        return view('treatment-orders.edit', compact('order', 'patients', 'consultations', 'services'));
+        $treatment_order->load(['patient', 'orderItems.service']);
+        return view('treatment-orders.edit', compact('treatment_order', 'patients', 'consultations', 'services'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, TreatmentOrder $order)
+    public function update(Request $request, TreatmentOrder $treatment_order)
     {
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
@@ -129,19 +128,19 @@ class TreatmentOrderController extends Controller
             'status' => 'required|in:draft,confirmed,production,ready,delivered,cancelled'
         ]);
 
-        $order->update($validated);
+        $treatment_order->update($validated);
 
-        return redirect()->route('treatment-orders.show', $order)
+        return redirect()->route('treatment-orders.show', ['treatment_order' => $treatment_order->id])
             ->with('success', 'Order treatment berhasil diperbarui.');
     }
 
-    public function updateStatus(Request $request, TreatmentOrder $order)
+    public function updateStatus(Request $request, TreatmentOrder $treatment_order)
     {
         $request->validate([
             'status' => 'required|in:draft,confirmed,production,ready,delivered,cancelled'
         ]);
 
-        $order->update(['status' => $request->status]);
+        $treatment_order->update(['status' => $request->status]);
 
         return redirect()->back()
             ->with('success', 'Status order berhasil diperbarui.');

@@ -22,7 +22,7 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        return view('service.create');
+        return view('services.create');
     }
 
     /**
@@ -51,7 +51,7 @@ class ServiceController extends Controller
      */
     public function show(Service $service)
     {
-        return view('service.show', compact('service'));
+        return view('services.show', compact('service'));
     }
 
     /**
@@ -59,7 +59,7 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
-        return view('service.edit', compact('service'));
+        return view('services.edit', compact('service'));
     }
 
     /**
