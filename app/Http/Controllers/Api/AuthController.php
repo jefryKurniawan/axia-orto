@@ -7,7 +7,9 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -28,7 +30,6 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->firstOrFail();
-        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'success' => true,
@@ -39,22 +40,122 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'role' => $user->role,
                 ],
-                'token' => $token,
             ],
             'message' => 'Login berhasil.',
         ]);
     }
 
     /**
-     * Logout (revoke current token).
+     * Logout (invalidate session for SPA cookie auth).
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'success' => true,
             'message' => 'Logout berhasil.',
+        ]);
+    }
+
+    /**
+     * Register first admin (no auth required, only works if no admin exists).
+     */
+    public function firstAdmin(Request $request): JsonResponse
+    {
+        if (User::where('role', 'admin')->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Admin sudah ada. Gunakan login sebagai admin untuk membuat user baru.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => ['required', 'string', Password::min(8)],
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        // Auto-login after creating first admin
+        Auth::login($user);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+            ],
+            'message' => 'Admin pertama berhasil dibuat.',
+        ], 201);
+    }
+
+    /**
+     * Register new user (admin only).
+     */
+    public function register(Request $request): JsonResponse
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Hanya admin yang bisa membuat user baru.'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => ['required', 'string', Password::min(8)],
+            'role' => 'required|in:admin,dokter,staf_klinik,teknisi',
+            'specialization' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'specialization' => $validated['specialization'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+            ],
+            'message' => 'User berhasil dibuat.',
+        ], 201);
+    }
+
+    /**
+     * List doctors (for dropdowns).
+     */
+    public function doctors(): JsonResponse
+    {
+        $doctors = User::where('role', 'dokter')
+            ->where('is_active', true)
+            ->select('id', 'name', 'specialization')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $doctors,
         ]);
     }
 
@@ -69,9 +170,11 @@ class AuthController extends Controller
             'success' => true,
             'data' => [
                 'id' => $user->id,
+                'uuid' => $user->uuid,
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'is_active' => $user->is_active,
             ],
         ]);
     }

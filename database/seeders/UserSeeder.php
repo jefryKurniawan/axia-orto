@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
             [
                 'uuid' => Str::uuid(),
                 'name' => 'Admin Axia',
-                'email' => 'admin@axia.com',
+                'email' => 'admin@axia.id',
                 'password' => Hash::make('password123'),
                 'role' => 'admin',
                 'specialization' => null,

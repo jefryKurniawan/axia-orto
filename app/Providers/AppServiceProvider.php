@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Consultation;
+use App\Observers\ConsultationObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register observers
+        Consultation::observe(ConsultationObserver::class);
+
         // Define gates for role-based access
         Gate::define('access-consultations', function ($user) {
             return in_array($user->role, ['admin', 'dokter']);

@@ -187,7 +187,7 @@ trait Cacheable
 
     public function scopeCachedPaginate($query, string $key, int $perPage = 15, int $ttl = 300)
     {
-        $page = request()->get('page', 1);
+        $page = request()->input('page') ?? 1;
         $cacheKey = $this->getCacheKey("{$key}.page.{$page}");
         $tags = [$this->getCacheTag()];
 

@@ -16,7 +16,7 @@ Route::get('{path?}', function () {
     $inject = sprintf(
         '<meta name="csrf-token" content="%s"><meta name="api-url" content="%s">',
         csrf_token(),
-        url('/api')
+        config('app.url') . '/api'
     );
 
     $html = str_replace('<head>', '<head>' . $inject, $html);

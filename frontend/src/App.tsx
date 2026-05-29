@@ -1,14 +1,62 @@
-import { Routes, Route } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { AppLayout } from './components/layout/AppLayout'
+import { ToastContainer } from './components/ui/Toast'
+import { useAppStore } from './stores/appStore'
 
-function App() {
+const Login = lazy(() => import('./pages/Login'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const PatientList = lazy(() => import('./pages/patients/PatientList'))
+const PatientDetail = lazy(() => import('./pages/patients/PatientDetail'))
+const PatientForm = lazy(() => import('./pages/patients/PatientForm'))
+const ConsultationList = lazy(() => import('./pages/consultations/ConsultationList'))
+const ConsultationDetail = lazy(() => import('./pages/consultations/ConsultationDetail'))
+const ConsultationForm = lazy(() => import('./pages/consultations/ConsultationForm'))
+const ServiceList = lazy(() => import('./pages/services/ServiceList'))
+const ServiceForm = lazy(() => import('./pages/services/ServiceForm'))
+const Register = lazy(() => import('./pages/Register'))
+
+function Loading() {
   return (
-    <Routes>
-      <Route path="/" element={<div className="min-h-screen flex items-center justify-center bg-slate-50"><h1 className="text-3xl font-bold text-slate-900">AxiaOrto Clinic ERP</h1></div>} />
-      <Route path="/login" element={<div className="min-h-screen flex items-center justify-center bg-slate-50"><h1 className="text-2xl font-bold text-slate-900">Login</h1></div>} />
-      <Route path="/dashboard" element={<div className="min-h-screen flex items-center justify-center bg-slate-50"><h1 className="text-2xl font-bold text-slate-900">Dashboard</h1></div>} />
-      <Route path="*" element={<div className="min-h-screen flex items-center justify-center bg-slate-50"><h1 className="text-2xl font-bold text-red-600">404 - Not Found</h1></div>} />
-    </Routes>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+    </div>
   )
 }
 
-export default App
+export default function App() {
+  const theme = useAppStore((s) => s.theme)
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [theme])
+
+  return (
+    <AuthProvider>
+      <ToastContainer />
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/patients" element={<PatientList />} />
+            <Route path="/patients/create" element={<PatientForm />} />
+            <Route path="/patients/:uuid" element={<PatientDetail />} />
+            <Route path="/patients/:uuid/edit" element={<PatientForm />} />
+            <Route path="/consultations" element={<ConsultationList />} />
+            <Route path="/consultations/create" element={<ConsultationForm />} />
+            <Route path="/consultations/:uuid" element={<ConsultationDetail />} />
+            <Route path="/consultations/:uuid/edit" element={<ConsultationForm />} />
+            <Route path="/services" element={<ServiceList />} />
+            <Route path="/services/create" element={<ServiceForm />} />
+            <Route path="/services/:uuid/edit" element={<ServiceForm />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Suspense>
+    </AuthProvider>
+  )
+}

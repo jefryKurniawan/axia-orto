@@ -20,7 +20,7 @@ class ReportController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $type = $request->get('type', 'patients');
+        $type = $request->input('type') ?? 'patients';
         $title = 'LAPORAN DATA';
         $headers = [];
         $data = [];
@@ -37,7 +37,7 @@ class ReportController extends Controller
                     $p->gender,
                     Carbon::parse($p->date_of_birth)->age . ' Thn',
                     $p->phone,
-                    $p->insurance_provider ?? 'Umum'
+                    $p->insurance_type ?? 'Umum'
                 ];
             }
         } elseif ($type === 'consultations') {

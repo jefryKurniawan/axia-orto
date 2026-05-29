@@ -168,6 +168,15 @@ class SuperSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        // Bump cache versions so fresh data is served
+        $modules = ['patients', 'consultations', 'services', 'dashboard'];
+        foreach ($modules as $module) {
+            DB::table('cache_versions')->updateOrInsert(
+                ['module_name' => $module],
+                ['version' => DB::raw('version + 1')]
+            );
+        }
     }
 
     private function getPatientName() {

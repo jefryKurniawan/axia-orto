@@ -20,7 +20,7 @@ class StorePatientRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'medical_record_number' => 'required|string|max:20|unique:patients',
+            'medical_record_number' => 'nullable|string|max:20|unique:patients',
             'name' => 'required|string|max:255',
             'nik' => 'nullable|string|size:16',
             'date_of_birth' => 'required|date|before:today',
