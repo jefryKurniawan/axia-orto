@@ -14,3 +14,11 @@ storage/framework/views/*
 .idea
 *.log
 frankenphp
+CLAUDE.md
+docs/
+.openclaude/
+frontend/node_modules
+public/build
+public/hot
+_ide_helper.php
+database/database.sqlite

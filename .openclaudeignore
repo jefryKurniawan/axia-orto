@@ -1,0 +1,10 @@
+.git
+node_modules
+vendor
+storage/framework
+storage/logs
+public/build
+public/fauna-assets
+public/img
+.idea
+*.log
