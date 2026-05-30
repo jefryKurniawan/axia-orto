@@ -5,6 +5,7 @@ import { AppLayout } from './components/layout/AppLayout'
 import { ToastContainer } from './components/ui/Toast'
 import { useAppStore } from './stores/appStore'
 
+const LandingPage = lazy(() => import('./pages/LandingPage'))
 const Login = lazy(() => import('./pages/Login'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const PatientList = lazy(() => import('./pages/patients/PatientList'))
@@ -50,9 +51,9 @@ export default function App() {
       <ToastContainer />
       <Suspense fallback={<Loading />}>
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route element={<AppLayout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/patients" element={<PatientList />} />
             <Route path="/patients/create" element={<PatientForm />} />
@@ -84,7 +85,7 @@ export default function App() {
             <Route path="/audit-logs" element={<AuditLogList />} />
             <Route path="/register" element={<Register />} />
           </Route>
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </AuthProvider>
