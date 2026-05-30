@@ -85,12 +85,12 @@ export default function ServiceList() {
                   <tbody>
                     {data.data.map((s) => (
                       <tr key={s.uuid} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="py-3 px-2 font-mono text-xs text-center">{s.code}</td>
-                        <td className="py-3 px-2 font-medium text-center">{s.name}</td>
+                        <td className="py-3 px-2 font-mono text-xs text-center text-slate-600 dark:text-slate-400">{s.code}</td>
+                        <td className="py-3 px-2 font-medium text-center text-slate-900 dark:text-slate-100">{s.name}</td>
                         <td className="py-3 px-2 hidden md:table-cell text-center">
                           <Badge variant="default">{typeLabels[s.service_type] || s.service_type}</Badge>
                         </td>
-                        <td className="py-3 px-2 text-center font-medium">{formatPrice(s.price)}</td>
+                        <td className="py-3 px-2 text-center font-medium text-slate-900 dark:text-slate-100">{formatPrice(s.price)}</td>
                         <td className="py-3 px-2 hidden lg:table-cell text-slate-600 dark:text-slate-400 text-center">
                           {s.duration_days ? `${s.duration_days} hari` : '-'}
                         </td>

@@ -96,7 +96,7 @@ export default function ConsultationList() {
                         <td className="py-3 px-2 text-xs text-slate-600 dark:text-slate-400 text-center">
                           {new Date(c.consultation_date).toLocaleDateString('id-ID')}
                         </td>
-                        <td className="py-3 px-2 font-medium text-center">{c.patient_name || '-'}</td>
+                        <td className="py-3 px-2 font-medium text-center text-slate-900 dark:text-slate-100">{c.patient_name || '-'}</td>
                         <td className="py-3 px-2 hidden md:table-cell text-slate-600 dark:text-slate-400 text-center">{c.doctor_name || '-'}</td>
                         <td className="py-3 px-2 hidden lg:table-cell text-slate-600 dark:text-slate-400 truncate max-w-[200px] text-center">{c.complaint}</td>
                         <td className="py-3 px-2 text-center"><StatusBadge status={c.status} /></td>

@@ -23,6 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
+    // Sanctum SPA: must fetch CSRF cookie first
+    await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' })
     const res = await api.post<{ user: User; token: string }>('/login', { email, password })
     setUser(res.data.user)
   }, [])

@@ -1,8 +1,8 @@
 const BASE_URL = '/api'
 
-function getCsrfToken(): string {
-  const meta = document.querySelector('meta[name="csrf-token"]')
-  return meta?.getAttribute('content') ?? ''
+function getXsrfToken(): string {
+  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : ''
 }
 
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -10,7 +10,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
-    'X-CSRF-TOKEN': getCsrfToken(),
+    'X-XSRF-TOKEN': getXsrfToken(),
     ...(options.headers as Record<string, string> ?? {}),
   }
 

@@ -75,9 +75,9 @@ export default function PatientList() {
                   <tbody>
                     {data.data.map((p) => (
                       <tr key={p.uuid} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="py-3 px-2 font-mono text-xs text-center">{p.medical_record_number}</td>
-                        <td className="py-3 px-2 font-medium text-center">{p.name}</td>
-                        <td className="py-3 px-2 hidden md:table-cell text-center">{p.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+                        <td className="py-3 px-2 font-mono text-xs text-center text-slate-600 dark:text-slate-400">{p.medical_record_number}</td>
+                        <td className="py-3 px-2 font-medium text-center text-slate-900 dark:text-slate-100">{p.name}</td>
+                        <td className="py-3 px-2 hidden md:table-cell text-center text-slate-600 dark:text-slate-400">{p.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
                         <td className="py-3 px-2 hidden lg:table-cell text-center">
                           <Badge variant={p.insurance_type === 'bpjs' ? 'info' : p.insurance_type === 'mandiri' ? 'default' : 'purple'}>
                             {p.insurance_type?.toUpperCase() || '-'}

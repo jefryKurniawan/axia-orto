@@ -34,7 +34,7 @@ function StatusRow({ label, value, total, color }: { label: string; value: numbe
     <div className="space-y-1">
       <div className="flex justify-between items-center">
         <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
-        <span className="font-medium tabular-nums">{displayValue}</span>
+        <span className="font-medium tabular-nums text-slate-900 dark:text-slate-100">{displayValue}</span>
       </div>
       <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <div
