@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Pencil, Package, AlertTriangle } from 'lucide-react'
+import { useNavigate, useParams, Link } from 'react-router-dom'
+import { ArrowLeft, Pencil, AlertTriangle } from 'lucide-react'
 import { useInventoryItem, useInventoryTransactions, useAdjustStock } from '../../hooks/useInventory'
 import { useToastStore } from '../../stores/toastStore'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
@@ -35,8 +35,28 @@ export default function InventoryDetail() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="space-y-4">
+        {/* Breadcrumb skeleton */}
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-14 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+          <span className="text-slate-300 dark:text-slate-600">/</span>
+          <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        </div>
+        {/* Title skeleton */}
+        <div className="h-7 w-40 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        {/* Content skeleton */}
+        <Card>
+          <CardBody>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="space-y-1">
+                  <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                  <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
       </div>
     )
   }
@@ -44,8 +64,10 @@ export default function InventoryDetail() {
   if (error || !data) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600 dark:text-red-400">Gagal memuat data inventory</p>
-        <Button variant="secondary" onClick={() => navigate('/inventory')} className="mt-4">Kembali</Button>
+        <p className="text-red-600 dark:text-red-400 mb-4">Gagal memuat data inventory</p>
+        <Button variant="secondary" onClick={() => navigate('/inventory')}>
+          <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali
+        </Button>
       </div>
     )
   }
@@ -70,24 +92,41 @@ export default function InventoryDetail() {
     )
   }
 
+  const infoFields = [
+    { label: 'Kode', value: <span className="font-mono">{item.code}</span> },
+    { label: 'Kategori', value: <Badge variant="default">{item.category === 'bahan_baku' ? 'Bahan Baku' : item.category === 'komponen' ? 'Komponen' : 'Alat Jadi'}</Badge> },
+    { label: 'Satuan', value: item.unit },
+    { label: 'Stok Saat Ini', value: <span className={`text-2xl font-bold ${item.quantity <= item.reorder_level ? 'text-orange-600 dark:text-orange-400' : ''}`}>{item.quantity}</span> },
+    { label: 'Batas Minimum', value: item.reorder_level },
+    { label: 'Harga', value: `Rp ${item.price.toLocaleString('id-ID')}` },
+  ]
+
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/inventory')} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <ArrowLeft className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-          </button>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Detail Inventory</h1>
+        <div className="min-w-0">
+          <nav className="text-xs text-slate-400 dark:text-slate-500 mb-1.5">
+            <Link to="/inventory" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Inventory</Link>
+            <span className="text-slate-300 dark:text-slate-600 mx-1">/</span>
+            <span className="text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
+          </nav>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">{item.name}</h1>
         </div>
-        <Button variant="secondary" onClick={() => navigate(`/inventory/${uuid}/edit`)} className="w-full sm:w-auto">
-          <Pencil className="w-4 h-4 mr-2" /> Edit
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => navigate('/inventory')} className="w-full sm:w-auto">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali
+          </Button>
+          <Button variant="secondary" onClick={() => navigate(`/inventory/${uuid}/edit`)} className="w-full sm:w-auto">
+            <Pencil className="w-4 h-4 mr-1.5" /> Edit
+          </Button>
+        </div>
       </div>
 
       {/* Low stock warning */}
       {item.quantity <= item.reorder_level && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
-          <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+          <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
           <p className="text-sm text-orange-700 dark:text-orange-300">
             Stok rendah! Stok saat ini ({item.quantity}) sudah di bawah batas minimum ({item.reorder_level}).
           </p>
@@ -97,43 +136,20 @@ export default function InventoryDetail() {
       {/* Item info */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{item.name}</h2>
-          </div>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Informasi Item</h2>
         </CardHeader>
         <CardBody>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Kode</p>
-              <p className="font-mono text-sm text-slate-900 dark:text-slate-100">{item.code}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Kategori</p>
-              <Badge variant="default">{item.category === 'bahan_baku' ? 'Bahan Baku' : item.category === 'komponen' ? 'Komponen' : 'Alat Jadi'}</Badge>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Satuan</p>
-              <p className="text-sm text-slate-900 dark:text-slate-100">{item.unit}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Stok Saat Ini</p>
-              <p className={`text-2xl font-bold ${item.quantity <= item.reorder_level ? 'text-orange-600 dark:text-orange-400' : 'text-slate-900 dark:text-slate-100'}`}>
-                {item.quantity}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Batas Minimum</p>
-              <p className="text-sm text-slate-900 dark:text-slate-100">{item.reorder_level}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Harga</p>
-              <p className="text-sm text-slate-900 dark:text-slate-100">Rp {item.price.toLocaleString('id-ID')}</p>
-            </div>
+            {infoFields.map((field) => (
+              <div key={field.label} className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">{field.label}</p>
+                <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{field.value}</div>
+              </div>
+            ))}
             {item.description && (
-              <div className="sm:col-span-2 lg:col-span-3">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Deskripsi</p>
-                <p className="text-sm text-slate-900 dark:text-slate-100">{item.description}</p>
+              <div className="sm:col-span-2 lg:col-span-3 space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Deskripsi</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.description}</p>
               </div>
             )}
           </div>
@@ -143,14 +159,14 @@ export default function InventoryDetail() {
       {/* Stock adjustment */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Adjust Stok</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Adjust Stok</h2>
         </CardHeader>
         <CardBody>
           <div className="flex flex-col sm:flex-row gap-3">
             <select
               value={adjustType}
               onChange={(e) => setAdjustType(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
             >
               <option value="masuk">Stok Masuk</option>
               <option value="keluar">Stok Keluar</option>
@@ -180,13 +196,13 @@ export default function InventoryDetail() {
       {/* Transaction history */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Riwayat Stok</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Riwayat Stok</h2>
         </CardHeader>
         <CardBody>
           {loadingTx ? (
             <TableSkeleton rows={3} />
           ) : !transactions?.data.length ? (
-            <p className="text-center text-slate-500 dark:text-slate-400 py-4">Belum ada riwayat transaksi</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">Belum ada riwayat transaksi</p>
           ) : (
             <>
               {/* Desktop table */}
@@ -194,16 +210,16 @@ export default function InventoryDetail() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Tanggal</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Tipe</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Jumlah</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Keterangan</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Oleh</th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Tanggal</th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Tipe</th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Jumlah</th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Keterangan</th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Oleh</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {transactions.data.map((tx) => (
-                      <tr key={tx.id} className="border-b border-slate-100 dark:border-slate-800">
+                      <tr key={tx.id}>
                         <td className="py-3 px-2 text-center text-slate-600 dark:text-slate-400">
                           {new Date(tx.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
@@ -240,7 +256,7 @@ export default function InventoryDetail() {
               {transactions.meta.last_page > 1 && (
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <Button size="sm" variant="secondary" disabled={txPage <= 1} onClick={() => setTxPage((p) => p - 1)}>Sebelumnya</Button>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">{txPage} / {transactions.meta.last_page}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">{txPage} / {transactions.meta.last_page}</span>
                   <Button size="sm" variant="secondary" disabled={txPage >= transactions.meta.last_page} onClick={() => setTxPage((p) => p + 1)}>Selanjutnya</Button>
                 </div>
               )}

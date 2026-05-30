@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Save, ArrowLeft } from 'lucide-react'
 import { api } from '../lib/api'
 import { useToastStore } from '../stores/toastStore'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
 
 const roles = [
   { value: 'dokter', label: 'Dokter' },
@@ -66,8 +68,13 @@ export default function Register() {
   return (
     <div className="max-w-lg mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Buat User Baru</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Tambahkan akun untuk dokter, staf, atau teknisi</p>
+        <nav className="text-xs text-slate-400 dark:text-slate-500 mb-1">
+          <Link to="/dashboard" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Dashboard</Link>
+          <span className="text-slate-300 dark:text-slate-600 mx-1">/</span>
+          <span className="text-slate-900 dark:text-slate-100">Buat User</span>
+        </nav>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Buat User Baru</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Tambahkan akun untuk dokter, staf, atau teknisi</p>
       </div>
 
       {errors.general && (
@@ -76,115 +83,105 @@ export default function Register() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap *</label>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Dr. Budi Santoso"
-          />
-          {errors.name && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.name}</p>}
-        </div>
+      <form onSubmit={handleSubmit}>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="p-6 space-y-6">
+            {/* Informasi Akun */}
+            <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4 space-y-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Informasi Akun</h3>
+              <Input
+                label="Nama Lengkap"
+                name="name"
+                required
+                value={form.name}
+                onChange={handleChange}
+                error={errors.name}
+                placeholder="Dr. Budi Santoso"
+              />
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                required
+                value={form.email}
+                onChange={handleChange}
+                error={errors.email}
+                placeholder="budi@axia.id"
+              />
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Password <span className="text-red-500 ml-1">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    minLength={8}
+                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                    placeholder="Minimal 8 karakter"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password && <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Role <span className="text-red-500 ml-1">*</span>
+                </label>
+                <select
+                  name="role"
+                  value={form.role}
+                  onChange={handleChange}
+                  className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                >
+                  {roles.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
+                </select>
+                {errors.role && <p className="text-xs text-red-600 dark:text-red-400">{errors.role}</p>}
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email *</label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="budi@axia.id"
-          />
-          {errors.email && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.email}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password *</label>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              minLength={8}
-              className="w-full px-3 py-2 pr-10 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Minimal 8 karakter"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              tabIndex={-1}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-          {errors.password && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.password}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role *</label>
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {roles.map((r) => (
-              <option key={r.value} value={r.value}>{r.label}</option>
-            ))}
-          </select>
-          {errors.role && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.role}</p>}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Spesialisasi</label>
-            <input
-              type="text"
-              name="specialization"
-              value={form.specialization}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Ortotik-Prostetik"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">No. HP</label>
-            <input
-              type="text"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="08123456789"
-            />
+            {/* Detail Tambahan */}
+            <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4 space-y-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Detail Tambahan</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Spesialisasi"
+                  name="specialization"
+                  value={form.specialization}
+                  onChange={handleChange}
+                  placeholder="Ortotik-Prostetik"
+                />
+                <Input
+                  label="No. HP"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="08123456789"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Menyimpan...' : 'Buat User'}
-          </button>
-          <Link
-            to="/dashboard"
-            className="px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            Batal
-          </Link>
+        <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
+          <Button type="button" variant="subtle" onClick={() => navigate('/dashboard')} className="w-full sm:w-auto">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Batal
+          </Button>
+          <Button type="submit" loading={loading} className="w-full sm:w-auto">
+            <Save className="h-4 w-4 mr-1.5" /> {loading ? 'Menyimpan...' : 'Buat User'}
+          </Button>
         </div>
       </form>
     </div>

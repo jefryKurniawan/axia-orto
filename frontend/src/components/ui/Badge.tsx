@@ -6,20 +6,31 @@ interface BadgeProps {
   children: ReactNode
   variant?: BadgeVariant
   className?: string
+  dot?: boolean
 }
 
 const variants: Record<BadgeVariant, string> = {
-  default: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200',
-  success: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',
-  warning: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300',
-  danger: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300',
-  info: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
-  purple: 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300',
+  default: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
+  success: 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+  warning: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+  danger: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300',
+  info: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+  purple: 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
 }
 
-export function Badge({ children, variant = 'default', className = '' }: BadgeProps) {
+const dotColors: Record<BadgeVariant, string> = {
+  default: 'bg-slate-400 dark:bg-slate-500',
+  success: 'bg-green-500',
+  warning: 'bg-amber-500',
+  danger: 'bg-red-500',
+  info: 'bg-blue-500',
+  purple: 'bg-purple-500',
+}
+
+export function Badge({ children, variant = 'default', className = '', dot = false }: BadgeProps) {
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium animate-pop ${variants[variant]} ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium animate-pop ${variants[variant]} ${className}`}>
+      {dot && <span className={`w-1.5 h-1.5 rounded-full ${dotColors[variant]}`} />}
       {children}
     </span>
   )
@@ -42,10 +53,11 @@ export function StatusBadge({ status }: { status: string }) {
     delivered: { label: 'Dikirim', variant: 'success' },
     // Payment statuses
     pending: { label: 'Pending', variant: 'warning' },
+    paid: { label: 'Dibayar', variant: 'success' },
     failed: { label: 'Gagal', variant: 'danger' },
     refunded: { label: 'Refund', variant: 'default' },
   }
 
   const { label, variant } = map[status] ?? { label: status, variant: 'default' }
-  return <Badge variant={variant}>{label}</Badge>
+  return <Badge variant={variant} dot>{label}</Badge>
 }

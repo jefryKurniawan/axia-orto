@@ -28,8 +28,27 @@ export default function ConsultationDetail() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-shimmer" />
+        {/* Breadcrumb skeleton */}
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+          <span className="text-slate-300 dark:text-slate-600">/</span>
+          <div className="h-3 w-28 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        </div>
+        {/* Title skeleton */}
+        <div className="h-7 w-40 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        {/* Content skeleton */}
+        <Card>
+          <CardBody>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="space-y-1">
+                  <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                  <div className="h-4 w-36 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
       </div>
     )
   }
@@ -45,7 +64,7 @@ export default function ConsultationDetail() {
     )
   }
 
-  const infoItems = [
+  const mainFields = [
     { label: 'Tanggal Konsultasi', value: new Date(consultation.consultation_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) },
     { label: 'Pasien', value: consultation.patient_name || '-' },
     { label: 'No. RM', value: consultation.medical_record_number || '-' },
@@ -59,44 +78,54 @@ export default function ConsultationDetail() {
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
-          <nav className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-            <Link to="/consultations" className="hover:text-blue-600">Konsultasi</Link>
-            <span className="mx-2">/</span>
-            <span className="text-slate-900 dark:text-slate-100 truncate">{consultation.patient_name}</span>
+          <nav className="text-xs text-slate-400 dark:text-slate-500 mb-1.5">
+            <Link to="/consultations" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Konsultasi</Link>
+            <span className="text-slate-300 dark:text-slate-600 mx-1">/</span>
+            <span className="text-slate-600 dark:text-slate-400 truncate">{consultation.patient_name}</span>
           </nav>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Detail Konsultasi</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Detail Konsultasi</h1>
+            <StatusBadge status={consultation.status} />
+          </div>
         </div>
-        <div className="flex gap-2 items-center flex-shrink-0 flex-wrap">
-          <StatusBadge status={consultation.status} />
-          <Button variant="secondary" onClick={() => navigate(`/consultations/${uuid}/edit`)} className="flex-1 sm:flex-none">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => navigate('/consultations')} className="w-full sm:w-auto">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali
+          </Button>
+          <Button variant="secondary" onClick={() => navigate(`/consultations/${uuid}/edit`)} className="w-full sm:w-auto">
             <Pencil className="h-4 w-4 mr-1.5" /> Edit
           </Button>
-          <Button variant="danger" onClick={() => setShowDelete(true)} className="flex-1 sm:flex-none">
+          <Button variant="danger" onClick={() => setShowDelete(true)} className="w-full sm:w-auto">
             <Trash2 className="h-4 w-4 mr-1.5" /> Hapus
           </Button>
         </div>
       </div>
 
+      {/* Content */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Informasi Konsultasi</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Informasi Konsultasi</h2>
         </CardHeader>
         <CardBody>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {infoItems.map((item) => (
-              <div key={item.label}>
-                <dt className="text-sm text-slate-500 dark:text-slate-400">{item.label}</dt>
-                <dd className="mt-1 text-sm text-slate-900 dark:text-slate-100">{item.value}</dd>
+            {mainFields.map((item) => (
+              <div key={item.label} className="space-y-1">
+                <dt className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">{item.label}</dt>
+                <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.value}</dd>
               </div>
             ))}
           </div>
         </CardBody>
       </Card>
 
+      {/* Delete Modal */}
       <Modal isOpen={showDelete} onClose={() => setShowDelete(false)} title="Hapus Konsultasi" size="sm">
-        <p className="text-slate-600 dark:text-slate-400 mb-6">Yakin ingin menghapus konsultasi ini?</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center">
+          Yakin ingin menghapus konsultasi ini?
+        </p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowDelete(false)}>Batal</Button>
           <Button variant="danger" loading={deleteMutation.isPending} onClick={handleDelete}>Hapus</Button>

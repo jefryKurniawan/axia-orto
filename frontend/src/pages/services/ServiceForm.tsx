@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useService, useCreateService, useUpdateService } from '../../hooks/useServices'
 import { useToastStore } from '../../stores/toastStore'
-import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Save, ArrowLeft } from 'lucide-react'
@@ -100,8 +99,23 @@ export default function ServiceForm() {
   if (isEdit && loadingExisting) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-shimmer" />
+        <div className="space-y-2">
+          <div className="h-3 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+          <div className="h-7 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        </div>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-6">
+          <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4 space-y-4">
+            <div className="h-3 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-1.5">
+                  <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                  <div className="h-10 w-full bg-slate-200 dark:bg-slate-700 rounded-lg animate-shimmer" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -109,123 +123,121 @@ export default function ServiceForm() {
   return (
     <div className="space-y-4">
       <div>
-        <nav className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-          <Link to="/services" className="hover:text-blue-600">Layanan</Link>
-          <span className="mx-2">/</span>
+        <nav className="text-xs text-slate-400 dark:text-slate-500 mb-1">
+          <Link to="/services" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Layanan</Link>
+          <span className="text-slate-300 dark:text-slate-600 mx-1">/</span>
           <span className="text-slate-900 dark:text-slate-100">{isEdit ? 'Edit' : 'Tambah'}</span>
         </nav>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           {isEdit ? 'Edit Layanan' : 'Tambah Layanan'}
         </h1>
       </div>
 
       {errors.general && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
+        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-400">
           {errors.general}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
-        <Card>
-          <CardHeader>
-            <h2 className="font-semibold text-slate-900 dark:text-slate-100">Informasi Layanan</h2>
-          </CardHeader>
-          <CardBody>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <Input
-                  label="Nama Layanan *"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  error={errors.name}
-                  placeholder="Contoh: Konsultasi Ortotik"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Tipe Layanan *
-                </label>
-                <select
-                  name="service_type"
-                  value={form.service_type}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {serviceTypes.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
-                {errors.service_type && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.service_type}</p>}
-              </div>
-
-              <div>
-                <Input
-                  label="Harga (Rp) *"
-                  name="price"
-                  type="number"
-                  value={form.price}
-                  onChange={handleChange}
-                  error={errors.price}
-                  placeholder="150000"
-                  min="0"
-                />
-              </div>
-
-              <div>
-                <Input
-                  label="Durasi (hari)"
-                  name="duration_days"
-                  type="number"
-                  value={form.duration_days}
-                  onChange={handleChange}
-                  error={errors.duration_days}
-                  placeholder="7"
-                  min="1"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 pt-6">
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  id="is_active"
-                  checked={form.is_active}
-                  onChange={handleChange}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="is_active" className="text-sm text-slate-700 dark:text-slate-300">
-                  Layanan aktif
-                </label>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Deskripsi
-                </label>
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Deskripsi layanan (opsional)"
-                />
-                {errors.description && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.description}</p>}
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="p-6 space-y-6">
+            {/* Informasi Layanan */}
+            <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4 space-y-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Informasi Layanan</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <Input
+                    label="Nama Layanan"
+                    name="name"
+                    required
+                    value={form.name}
+                    onChange={handleChange}
+                    error={errors.name}
+                    placeholder="Contoh: Konsultasi Ortotik"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Tipe Layanan <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <select
+                    name="service_type"
+                    value={form.service_type}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                  >
+                    {serviceTypes.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                  {errors.service_type && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.service_type}</p>}
+                </div>
+                <div>
+                  <Input
+                    label="Harga (Rp)"
+                    name="price"
+                    type="number"
+                    required
+                    value={form.price}
+                    onChange={handleChange}
+                    error={errors.price}
+                    placeholder="150000"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <Input
+                    label="Durasi (hari)"
+                    name="duration_days"
+                    type="number"
+                    value={form.duration_days}
+                    onChange={handleChange}
+                    error={errors.duration_days}
+                    placeholder="7"
+                    min="1"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    id="is_active"
+                    checked={form.is_active}
+                    onChange={handleChange}
+                    className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="is_active" className="text-sm text-slate-700 dark:text-slate-300">
+                    Layanan aktif
+                  </label>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Deskripsi
+                  </label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                    placeholder="Deskripsi layanan (opsional)"
+                  />
+                  {errors.description && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.description}</p>}
+                </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div className="flex gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <Button type="submit" disabled={loading}>
-                <Save className="h-4 w-4 mr-1.5" /> {loading ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Tambah Layanan'}
-              </Button>
-              <Button type="button" variant="secondary" onClick={() => navigate('/services')}>
-                <ArrowLeft className="h-4 w-4 mr-1.5" /> Batal
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
+        <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
+          <Button type="button" variant="subtle" onClick={() => navigate('/services')} className="w-full sm:w-auto">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Batal
+          </Button>
+          <Button type="submit" loading={loading} className="w-full sm:w-auto">
+            <Save className="h-4 w-4 mr-1.5" /> {loading ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Tambah Layanan'}
+          </Button>
+        </div>
       </form>
     </div>
   )

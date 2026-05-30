@@ -23,8 +23,41 @@ export default function PatientDetail() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-shimmer" />
+        {/* Breadcrumb skeleton */}
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+          <span className="text-slate-300 dark:text-slate-600">/</span>
+          <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        </div>
+        {/* Title skeleton */}
+        <div className="h-7 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        {/* Content skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="md:col-span-2">
+            <CardBody>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                    <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                  </div>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody>
+              <div className="space-y-4">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                    <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                  </div>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -40,7 +73,7 @@ export default function PatientDetail() {
     )
   }
 
-  const infoItems = [
+  const mainFields = [
     { label: 'No. Rekam Medis', value: patient.medical_record_number },
     { label: 'NIK', value: patient.nik || '-' },
     { label: 'Tanggal Lahir', value: patient.date_of_birth ? new Date(patient.date_of_birth).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' },
@@ -54,36 +87,41 @@ export default function PatientDetail() {
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
-          <nav className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-            <Link to="/patients" className="hover:text-blue-600">Pasien</Link>
-            <span className="mx-2">/</span>
-            <span className="text-slate-900 dark:text-slate-100 truncate">{patient.name}</span>
+          <nav className="text-xs text-slate-400 dark:text-slate-500 mb-1.5">
+            <Link to="/patients" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Pasien</Link>
+            <span className="text-slate-300 dark:text-slate-600 mx-1">/</span>
+            <span className="text-slate-600 dark:text-slate-400 truncate">{patient.name}</span>
           </nav>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">{patient.name}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">{patient.name}</h1>
         </div>
-        <div className="flex gap-2 flex-shrink-0">
-          <Button variant="secondary" onClick={() => navigate(`/patients/${uuid}/edit`)} className="flex-1 sm:flex-none">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => navigate('/patients')} className="w-full sm:w-auto">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali
+          </Button>
+          <Button variant="secondary" onClick={() => navigate(`/patients/${uuid}/edit`)} className="w-full sm:w-auto">
             <Pencil className="h-4 w-4 mr-1.5" /> Edit
           </Button>
-          <Button variant="danger" onClick={() => setShowDelete(true)} className="flex-1 sm:flex-none">
+          <Button variant="danger" onClick={() => setShowDelete(true)} className="w-full sm:w-auto">
             <Trash2 className="h-4 w-4 mr-1.5" /> Hapus
           </Button>
         </div>
       </div>
 
+      {/* Content */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
+        <Card className="md:col-span-2">
           <CardHeader>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Informasi Pasien</h2>
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Informasi Pasien</h2>
           </CardHeader>
           <CardBody>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {infoItems.map((item) => (
-                <div key={item.label}>
-                  <dt className="text-sm text-slate-500 dark:text-slate-400">{item.label}</dt>
-                  <dd className="mt-1 text-sm text-slate-900 dark:text-slate-100">{item.value}</dd>
+              {mainFields.map((item) => (
+                <div key={item.label} className="space-y-1">
+                  <dt className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">{item.label}</dt>
+                  <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.value}</dd>
                 </div>
               ))}
             </div>
@@ -92,20 +130,20 @@ export default function PatientDetail() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Status</h2>
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Status</h2>
           </CardHeader>
           <CardBody className="space-y-4">
-            <div>
-              <dt className="text-sm text-slate-500 dark:text-slate-400">Asuransi</dt>
-              <dd className="mt-1">
+            <div className="space-y-1">
+              <dt className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Asuransi</dt>
+              <dd>
                 <Badge variant={patient.insurance_type === 'bpjs' ? 'info' : patient.insurance_type === 'mandiri' ? 'default' : 'purple'}>
                   {patient.insurance_type?.toUpperCase() || '-'}
                 </Badge>
               </dd>
             </div>
-            <div>
-              <dt className="text-sm text-slate-500 dark:text-slate-400">Terdaftar</dt>
-              <dd className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+            <div className="space-y-1">
+              <dt className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Terdaftar</dt>
+              <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 {new Date(patient.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
               </dd>
             </div>
@@ -113,8 +151,11 @@ export default function PatientDetail() {
         </Card>
       </div>
 
+      {/* Delete Modal */}
       <Modal isOpen={showDelete} onClose={() => setShowDelete(false)} title="Hapus Pasien" size="sm">
-        <p className="text-slate-600 dark:text-slate-400 mb-6">Yakin ingin menghapus pasien <strong>{patient.name}</strong>?</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center">
+          Yakin ingin menghapus pasien <strong className="text-slate-900 dark:text-slate-100">{patient.name}</strong>?
+        </p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowDelete(false)}>Batal</Button>
           <Button variant="danger" loading={deleteMutation.isPending} onClick={handleDelete}>Hapus</Button>

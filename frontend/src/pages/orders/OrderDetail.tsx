@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge, StatusBadge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { useState } from 'react'
-import { Eye } from 'lucide-react'
+import { Eye, ArrowLeft, Pencil } from 'lucide-react'
 
 const nextStatusMap: Record<string, string> = {
   draft: 'confirmed',
@@ -59,8 +59,40 @@ export default function OrderDetail() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-shimmer" />
+        {/* Breadcrumb skeleton */}
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-10 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+          <span className="text-slate-300 dark:text-slate-600">/</span>
+          <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        </div>
+        {/* Title skeleton */}
+        <div className="h-7 w-36 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        {/* Content skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="md:col-span-2">
+            <CardBody>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                    <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                  </div>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+          <div className="space-y-4">
+            <Card>
+              <CardBody>
+                <div className="space-y-3">
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <div key={i} className="h-12 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                  ))}
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+        </div>
       </div>
     )
   }
@@ -69,12 +101,14 @@ export default function OrderDetail() {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 mb-4">Gagal memuat data order</p>
-        <Button variant="secondary" onClick={() => navigate('/orders')}>Kembali ke Daftar Order</Button>
+        <Button variant="secondary" onClick={() => navigate('/orders')}>
+          <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali ke Daftar Order
+        </Button>
       </div>
     )
   }
 
-  const infoItems = [
+  const mainFields = [
     { label: 'No. Order', value: order.order_number },
     { label: 'Pasien', value: order.patient?.name || '-' },
     { label: 'No. RM', value: order.patient?.medical_record_number || '-' },
@@ -87,44 +121,53 @@ export default function OrderDetail() {
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
-          <nav className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-            <Link to="/orders" className="hover:text-blue-600">Order</Link>
-            <span className="mx-2">/</span>
-            <span className="text-slate-900 dark:text-slate-100 truncate">{order.order_number}</span>
+          <nav className="text-xs text-slate-400 dark:text-slate-500 mb-1.5">
+            <Link to="/orders" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Order</Link>
+            <span className="text-slate-300 dark:text-slate-600 mx-1">/</span>
+            <span className="text-slate-600 dark:text-slate-400 truncate">{order.order_number}</span>
           </nav>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">{order.order_number}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">{order.order_number}</h1>
+            <StatusBadge status={order.status} />
+          </div>
         </div>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => navigate('/orders')} className="w-full sm:w-auto">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali
+          </Button>
           {nextStatusMap[order.status] && (
-            <Button onClick={handleAdvanceStatus} loading={statusMutation.isPending}>
+            <Button onClick={handleAdvanceStatus} loading={statusMutation.isPending} className="w-full sm:w-auto">
               {nextStatusLabel[order.status]}
             </Button>
           )}
           {order.status === 'draft' && (
-            <Button variant="secondary" onClick={() => navigate(`/orders/${order.uuid}/edit`)}>Edit</Button>
+            <Button variant="secondary" onClick={() => navigate(`/orders/${order.uuid}/edit`)} className="w-full sm:w-auto">
+              <Pencil className="h-4 w-4 mr-1.5" /> Edit
+            </Button>
           )}
           {order.status !== 'cancelled' && order.status !== 'delivered' && (
-            <Button variant="danger" onClick={() => setShowCancel(true)}>Batalkan</Button>
+            <Button variant="danger" onClick={() => setShowCancel(true)} className="w-full sm:w-auto">
+              Batalkan
+            </Button>
           )}
         </div>
       </div>
 
+      {/* Content */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
+        <Card className="md:col-span-2">
           <CardHeader>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Informasi Order</h2>
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Informasi Order</h2>
           </CardHeader>
           <CardBody>
-            <div className="flex items-center gap-2 mb-4">
-              <StatusBadge status={order.status} />
-            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {infoItems.map((item) => (
-                <div key={item.label}>
-                  <dt className="text-sm text-slate-500 dark:text-slate-400">{item.label}</dt>
-                  <dd className="mt-1 text-sm text-slate-900 dark:text-slate-100">{item.value}</dd>
+              {mainFields.map((item) => (
+                <div key={item.label} className="space-y-1">
+                  <dt className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">{item.label}</dt>
+                  <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.value}</dd>
                 </div>
               ))}
             </div>
@@ -136,13 +179,13 @@ export default function OrderDetail() {
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Pembayaran</h2>
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Pembayaran</h2>
                 <Button size="sm" variant="ghost" onClick={() => navigate(`/payments/create?order=${order.uuid}`)}>+ Tambah</Button>
               </div>
             </CardHeader>
             <CardBody>
               {!payments?.length ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada pembayaran</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">Belum ada pembayaran</p>
               ) : (
                 <div className="space-y-2">
                   {payments.map((p) => (
@@ -168,13 +211,13 @@ export default function OrderDetail() {
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Produksi</h2>
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Produksi</h2>
                 <Button size="sm" variant="ghost" onClick={() => navigate(`/production/create?order=${order.uuid}`)}>+ Tambah</Button>
               </div>
             </CardHeader>
             <CardBody>
               {!trackings?.length ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada tracking</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">Belum ada tracking</p>
               ) : (
                 <div className="space-y-2">
                   {trackings.map((t) => (
@@ -189,7 +232,7 @@ export default function OrderDetail() {
                         </Badge>
                         <button
                           onClick={() => navigate(`/production/${t.uuid}`)}
-                          className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:scale-110 active:scale-95 transition-all duration-200"
+                          className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:scale-110 active:scale-95 transition-all duration-150"
                           title="Detail"
                         >
                           <Eye className="w-4 h-4" />
@@ -207,29 +250,29 @@ export default function OrderDetail() {
       {/* Item Order */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Item Order</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Item Order</h2>
         </CardHeader>
         <CardBody>
           {!order.order_items?.length ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Tidak ada item</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">Tidak ada item</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Layanan</th>
-                    <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Qty</th>
-                    <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Harga Satuan</th>
-                    <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Total</th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Layanan</th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Qty</th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Harga Satuan</th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Total</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {order.order_items.map((item) => (
-                    <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800">
+                    <tr key={item.id}>
                       <td className="py-3 px-2 text-center text-slate-900 dark:text-slate-100">{item.service_name || `Service #${item.service_id}`}</td>
                       <td className="py-3 px-2 text-center text-slate-600 dark:text-slate-400">{item.quantity}</td>
                       <td className="py-3 px-2 text-center text-slate-600 dark:text-slate-400">Rp {Number(item.unit_price).toLocaleString('id-ID')}</td>
-                      <td className="py-3 px-2 text-center text-slate-900 dark:text-slate-100">Rp {Number(item.total_price).toLocaleString('id-ID')}</td>
+                      <td className="py-3 px-2 text-center font-medium text-slate-900 dark:text-slate-100">Rp {Number(item.total_price).toLocaleString('id-ID')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -239,13 +282,11 @@ export default function OrderDetail() {
         </CardBody>
       </Card>
 
-      <div className="flex justify-start">
-        <Button variant="secondary" onClick={() => navigate('/orders')}>Kembali ke Daftar</Button>
-      </div>
-
       {/* Cancel confirmation */}
       <Modal isOpen={showCancel} onClose={() => setShowCancel(false)} title="Batalkan Order" size="sm">
-        <p className="text-slate-600 dark:text-slate-400 mb-6">Yakin ingin membatalkan order <strong>{order.order_number}</strong>?</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center">
+          Yakin ingin membatalkan order <strong className="text-slate-900 dark:text-slate-100">{order.order_number}</strong>?
+        </p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowCancel(false)}>Batal</Button>
           <Button variant="danger" loading={statusMutation.isPending} onClick={handleCancel}>Batalkan Order</Button>

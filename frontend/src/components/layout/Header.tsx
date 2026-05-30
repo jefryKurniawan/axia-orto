@@ -8,7 +8,7 @@ import { Button } from '../ui/Button'
 import { PanelLeftClose, PanelLeft, Sun, Moon, LogOut, Cloud, CloudOff, RefreshCw } from 'lucide-react'
 
 export function Header() {
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
   const { sidebarOpen, toggleSidebar } = useAppStore()
   const { theme, toggleTheme } = useTheme()
   const { isOnline, pendingSyncCount, syncNow } = useSyncStatus()
@@ -32,83 +32,79 @@ export function Header() {
     await logout()
   }
 
+  const handleSync = async () => {
+    setSyncing(true)
+    try {
+      await syncNow()
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   return (
     <>
-      <header className="sticky top-0 z-30 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 lg:px-6">
-        <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-30 h-14 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 lg:px-6">
+        <div className="flex items-center gap-2">
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all duration-200"
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:scale-105 active:scale-95 transition-all duration-150"
             aria-label="Toggle sidebar"
           >
-            {sidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeft className="w-5 h-5" />}
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleThemeToggle}
-            className="theme-toggle-btn relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all duration-200 overflow-visible"
-            aria-label="Toggle theme"
-          >
-            <span className="theme-ripple absolute inset-0 rounded-full pointer-events-none" />
-            <span className="relative z-10">
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </span>
+            {sidebarOpen ? <PanelLeftClose className="w-[18px] h-[18px]" /> : <PanelLeft className="w-[18px] h-[18px]" />}
           </button>
 
-          {/* Sync status badge */}
-          <div className="flex items-center gap-1.5">
-            {!isOnline ? (
-              <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-full">
-                <CloudOff className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Offline</span>
-              </span>
-            ) : pendingSyncCount > 0 ? (
+          {/* Sync status */}
+          <div className="flex items-center gap-1.5 ml-2">
+            {isOnline ? (
+              <Cloud className="w-3.5 h-3.5 text-emerald-500" />
+            ) : (
+              <CloudOff className="w-3.5 h-3.5 text-red-500" />
+            )}
+            {pendingSyncCount > 0 && (
               <button
-                onClick={async () => {
-                  setSyncing(true)
-                  await syncNow()
-                  setSyncing(false)
-                }}
+                onClick={handleSync}
                 disabled={syncing}
-                className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:scale-105 active:scale-95 transition-all duration-200"
+                className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">{pendingSyncCount} pending</span>
               </button>
-            ) : (
-              <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                <Cloud className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Online</span>
-              </span>
             )}
           </div>
+        </div>
 
-          <div className="flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-700">
-            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-sm font-medium text-blue-700 dark:text-blue-400">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{user?.name}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{user?.role?.replace('_', ' ')}</p>
-            </div>
-            <button
-              onClick={() => setShowLogout(true)}
-              className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 hover:scale-105 active:scale-95 transition-all duration-200"
-              aria-label="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="flex items-center gap-1">
+          {/* Theme toggle */}
+          <button
+            onClick={handleThemeToggle}
+            className="relative p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:scale-105 active:scale-95 transition-all duration-150 overflow-hidden"
+            aria-label="Toggle theme"
+          >
+            <span className="theme-ripple absolute inset-0 rounded-lg pointer-events-none" />
+            {theme === 'light' ? <Moon className="w-[18px] h-[18px]" /> : <Sun className="w-[18px] h-[18px]" />}
+          </button>
+
+          {/* Logout */}
+          <button
+            onClick={() => setShowLogout(true)}
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:scale-105 active:scale-95 transition-all duration-150"
+            aria-label="Logout"
+          >
+            <LogOut className="w-[18px] h-[18px]" />
+          </button>
         </div>
       </header>
 
-      <Modal isOpen={showLogout} onClose={() => setShowLogout(false)} title="Konfirmasi Logout" size="sm">
-        <p className="text-slate-600 dark:text-slate-400 mb-6">Yakin ingin keluar dari aplikasi?</p>
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={() => setShowLogout(false)}>Batal</Button>
-          <Button variant="danger" loading={loggingOut} onClick={handleLogout}>Logout</Button>
+      {/* Logout confirmation */}
+      <Modal isOpen={showLogout} onClose={() => setShowLogout(false)} title="Keluar?" size="sm">
+        <div className="text-center">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">Yakin ingin keluar dari aplikasi?</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setShowLogout(false)}>Batal</Button>
+            <Button variant="danger" loading={loggingOut} onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-1.5" /> Keluar
+            </Button>
+          </div>
         </div>
       </Modal>
     </>

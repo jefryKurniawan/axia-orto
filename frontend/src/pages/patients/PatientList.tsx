@@ -1,12 +1,11 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Trash2, Upload, FileSpreadsheet, Download, CheckCircle, AlertCircle, BarChart3 } from 'lucide-react'
+import { Eye, Trash2, Upload, FileSpreadsheet, Download, CheckCircle, AlertCircle, BarChart3, Search, X, Users } from 'lucide-react'
 import { usePatients, useDeletePatient, useImportPatients } from '../../hooks/usePatients'
 import { useToastStore } from '../../stores/toastStore'
 import { useDebounce } from '../../hooks/useDebounce'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
-import { Input } from '../../components/ui/Input'
 import { Badge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { TableSkeleton } from '../../components/ui/Skeleton'
@@ -65,13 +64,66 @@ export default function PatientList() {
     URL.revokeObjectURL(url)
   }
 
+  const renderPagination = () => {
+    if (!data?.meta || data.meta.last_page <= 1) return null
+    const { current_page, last_page, total } = data.meta
+    const start = (current_page - 1) * data.meta.per_page + 1
+    const end = Math.min(current_page * data.meta.per_page, total)
+
+    return (
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+        <p className="text-xs text-slate-400 dark:text-slate-500 text-center sm:text-left">
+          Menampilkan {start}-{end} dari {total} pasien
+        </p>
+        <div className="flex items-center justify-center gap-1">
+          <Button size="sm" variant="ghost" disabled={current_page <= 1} onClick={() => setPage((p) => p - 1)}>
+            &laquo;
+          </Button>
+          {Array.from({ length: Math.min(last_page, 5) }, (_, i) => {
+            const p = i + 1
+            return (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
+                  p === current_page
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                {p}
+              </button>
+            )
+          })}
+          {last_page > 5 && <span className="text-xs text-slate-400 px-1">...</span>}
+          {last_page > 5 && (
+            <button
+              onClick={() => setPage(last_page)}
+              className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
+                last_page === current_page
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              {last_page}
+            </button>
+          )}
+          <Button size="sm" variant="ghost" disabled={current_page >= last_page} onClick={() => setPage((p) => p + 1)}>
+            &raquo;
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Pasien</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Pasien</h1>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button variant="secondary" onClick={() => setShowImport(true)} className="w-full sm:w-auto">
-            <Upload className="w-4 h-4 mr-2" /> Import CSV
+          <Button variant="subtle" onClick={() => setShowImport(true)} className="w-full sm:w-auto">
+            <Upload className="w-4 h-4 mr-1.5" /> Import CSV
           </Button>
           <Button onClick={() => navigate('/patients/create')} className="w-full sm:w-auto">
             + Tambah Pasien
@@ -79,21 +131,48 @@ export default function PatientList() {
         </div>
       </div>
 
+      {/* Table Card */}
       <Card>
         <CardHeader>
-          <Input
-            placeholder="Cari nama, NIK, atau No. RM..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Cari nama, NIK, atau No. RM..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+              className="w-full pl-9 pr-8 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+            />
+            {search && (
+              <button
+                onClick={() => { setSearch(''); setPage(1) }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </CardHeader>
         <CardBody>
           {isLoading ? (
-            <TableSkeleton rows={5} />
+            <TableSkeleton rows={5} columns={5} />
           ) : error ? (
-            <p className="text-center text-red-600 dark:text-red-400 py-8">Gagal memuat data</p>
+            <div className="flex flex-col items-center py-10 gap-2">
+              <AlertCircle className="w-6 h-6 text-red-400" />
+              <p className="text-sm text-red-600 dark:text-red-400">Gagal memuat data</p>
+            </div>
           ) : !data?.data.length ? (
-            <p className="text-center text-slate-500 dark:text-slate-400 py-8">Tidak ada pasien ditemukan</p>
+            <div className="flex flex-col items-center py-12 gap-3">
+              <Users className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {search ? 'Tidak ada pasien ditemukan' : 'Belum ada pasien'}
+              </p>
+              {!search && (
+                <Button size="sm" onClick={() => navigate('/patients/create')}>
+                  + Tambah Pasien
+                </Button>
+              )}
+            </div>
           ) : (
             <>
               {/* Desktop table */}
@@ -101,38 +180,42 @@ export default function PatientList() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">No. RM</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Nama</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400 hidden md:table-cell">Gender</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400 hidden lg:table-cell">Asuransi</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400 hidden xl:table-cell">Telepon</th>
-                      <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Aksi</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">No. RM</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Nama</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 hidden md:table-cell">Gender</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 hidden lg:table-cell">Asuransi</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 hidden xl:table-cell">Telepon</th>
+                      <th className="text-center py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {data.data.map((p) => (
-                      <tr key={p.uuid} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="py-3 px-2 font-mono text-xs text-center text-slate-600 dark:text-slate-400">{p.medical_record_number}</td>
-                        <td className="py-3 px-2 font-medium text-center text-slate-900 dark:text-slate-100">{p.name}</td>
-                        <td className="py-3 px-2 hidden md:table-cell text-center text-slate-600 dark:text-slate-400">{p.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
-                        <td className="py-3 px-2 hidden lg:table-cell text-center">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {data.data.map((p, i) => (
+                      <tr
+                        key={p.uuid}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors animate-row-enter"
+                        style={{ animationDelay: `${i * 30}ms` }}
+                      >
+                        <td className="py-3.5 px-4 font-mono text-xs text-slate-500 dark:text-slate-400">{p.medical_record_number}</td>
+                        <td className="py-3.5 px-4 font-medium text-slate-900 dark:text-slate-100">{p.name}</td>
+                        <td className="py-3.5 px-4 hidden md:table-cell text-slate-600 dark:text-slate-400">{p.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+                        <td className="py-3.5 px-4 hidden lg:table-cell">
                           <Badge variant={p.insurance_type === 'bpjs' ? 'info' : p.insurance_type === 'mandiri' ? 'default' : 'purple'}>
                             {p.insurance_type?.toUpperCase() || '-'}
                           </Badge>
                         </td>
-                        <td className="py-3 px-2 hidden xl:table-cell text-slate-600 dark:text-slate-400 text-center">{p.phone || '-'}</td>
-                        <td className="py-3 px-2">
+                        <td className="py-3.5 px-4 hidden xl:table-cell text-slate-600 dark:text-slate-400">{p.phone || '-'}</td>
+                        <td className="py-3.5 px-4">
                           <div className="flex justify-center gap-1">
                             <button
                               onClick={() => navigate(`/patients/${p.uuid}`)}
-                              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:scale-110 active:scale-95 transition-all duration-200"
+                              className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:scale-110 active:scale-95 transition-all duration-150"
                               title="Detail"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => setDeleteTarget({ uuid: p.uuid, name: p.name })}
-                              className="p-1.5 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              className="p-1.5 rounded-lg text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:scale-110 active:scale-95 transition-all duration-150"
                               title="Hapus"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -146,11 +229,15 @@ export default function PatientList() {
               </div>
 
               {/* Mobile card view */}
-              <div className="block sm:hidden space-y-3">
+              <div className="block sm:hidden space-y-2">
                 {data.data.map((p) => (
-                  <div key={p.uuid} className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-2">
+                  <div
+                    key={p.uuid}
+                    className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-2 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/patients/${p.uuid}`)}
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{p.medical_record_number}</span>
+                      <span className="font-mono text-xs text-slate-400 dark:text-slate-500">{p.medical_record_number}</span>
                       <Badge variant={p.insurance_type === 'bpjs' ? 'info' : p.insurance_type === 'mandiri' ? 'default' : 'purple'}>
                         {p.insurance_type?.toUpperCase() || '-'}
                       </Badge>
@@ -160,7 +247,7 @@ export default function PatientList() {
                       <span>{p.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</span>
                       {p.phone && <span>- {p.phone}</span>}
                     </div>
-                    <div className="flex gap-2 pt-1">
+                    <div className="flex gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
                       <Button size="sm" variant="ghost" onClick={() => navigate(`/patients/${p.uuid}`)} className="flex-1">Detail</Button>
                       <Button size="sm" variant="danger" onClick={() => setDeleteTarget({ uuid: p.uuid, name: p.name })} className="flex-1">Hapus</Button>
                     </div>
@@ -168,31 +255,15 @@ export default function PatientList() {
                 ))}
               </div>
 
-              {data.meta.last_page > 1 && (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 text-center sm:text-left">
-                    {data.meta.total} pasien ditemukan
-                  </p>
-                  <div className="flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                      Sebelumnya
-                    </Button>
-                    <span className="flex items-center px-3 text-sm text-slate-600 dark:text-slate-400">
-                      {page} / {data.meta.last_page}
-                    </span>
-                    <Button size="sm" variant="secondary" disabled={page >= data.meta.last_page} onClick={() => setPage((p) => p + 1)}>
-                      Selanjutnya
-                    </Button>
-                  </div>
-                </div>
-              )}
+              {renderPagination()}
             </>
           )}
         </CardBody>
       </Card>
 
+      {/* Delete Modal */}
       <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Hapus Pasien" size="sm">
-        <p className="text-slate-600 dark:text-slate-400 mb-6">Yakin ingin menghapus pasien <strong>{deleteTarget?.name}</strong>?</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center">Yakin ingin menghapus pasien <strong className="text-slate-900 dark:text-slate-100">{deleteTarget?.name}</strong>?</p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Batal</Button>
           <Button variant="danger" loading={deleteMutation.isPending} onClick={handleDelete}>Hapus</Button>
@@ -202,7 +273,6 @@ export default function PatientList() {
       {/* Import CSV Modal */}
       <Modal isOpen={showImport} onClose={() => { setShowImport(false); setImportResult(null); setFileName(''); if (fileRef.current) fileRef.current.value = '' }} title="Import Pasien dari CSV" size="md">
         <div className="space-y-5">
-          {/* Template download */}
           <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <FileSpreadsheet className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -215,13 +285,12 @@ export default function PatientList() {
             </button>
           </div>
 
-          {/* Drop zone */}
           <div
-            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer ${
+            className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer ${
               dragOver
                 ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500'
                 : fileName
-                  ? 'border-green-300 bg-green-50/50 dark:bg-green-900/10 dark:border-green-600'
+                  ? 'border-emerald-300 bg-emerald-50/50 dark:bg-emerald-900/10 dark:border-emerald-600'
                   : 'border-slate-300 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'
             }`}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
@@ -232,38 +301,33 @@ export default function PatientList() {
             <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} />
             {fileName ? (
               <div className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
+                <CheckCircle className="w-8 h-8 text-emerald-500" />
                 <div>
                   <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{fileName}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Klik untuk ganti file</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Klik untuk ganti file</p>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <Upload className="w-6 h-6 text-slate-400 dark:text-slate-500" />
-                </div>
+                <Upload className="w-8 h-8 text-slate-400 dark:text-slate-500" />
                 <div>
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Seret file CSV ke sini</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">atau klik untuk memilih file</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Seret file CSV ke sini</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">atau klik untuk memilih file</p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Result */}
           {importResult && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                 <BarChart3 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Hasil Import</span>
               </div>
               <div className="p-4 space-y-2">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span className="text-sm text-green-700 dark:text-green-400">{importResult.imported} pasien berhasil diimport</span>
+                  <CheckCircle className="w-4 h-4 text-emerald-500" />
+                  <span className="text-sm text-emerald-700 dark:text-emerald-400">{importResult.imported} pasien berhasil diimport</span>
                 </div>
                 {importResult.skipped > 0 && (
                   <div className="flex items-center gap-2">
@@ -282,7 +346,6 @@ export default function PatientList() {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={() => { setShowImport(false); setImportResult(null); setFileName(''); if (fileRef.current) fileRef.current.value = '' }}>Tutup</Button>
             <Button loading={importMutation.isPending} onClick={handleImport} disabled={!fileName}>

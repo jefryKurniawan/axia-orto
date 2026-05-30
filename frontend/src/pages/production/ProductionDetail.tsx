@@ -50,8 +50,27 @@ export default function ProductionDetail() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-shimmer" />
+        {/* Breadcrumb skeleton */}
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-14 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+          <span className="text-slate-300 dark:text-slate-600">/</span>
+          <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        </div>
+        {/* Title skeleton */}
+        <div className="h-7 w-36 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        {/* Content skeleton */}
+        <Card>
+          <CardBody>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="space-y-1">
+                  <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                  <div className="h-4 w-28 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
       </div>
     )
   }
@@ -60,12 +79,14 @@ export default function ProductionDetail() {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 mb-4">Gagal memuat data tracking</p>
-        <Button variant="secondary" onClick={() => navigate('/production')}><ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali ke Daftar</Button>
+        <Button variant="secondary" onClick={() => navigate('/production')}>
+          <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali ke Daftar
+        </Button>
       </div>
     )
   }
 
-  const infoItems = [
+  const mainFields = [
     { label: 'Order', value: tracking.order_number || '-' },
     { label: 'Pasien', value: tracking.patient_name || '-' },
     { label: 'Langkah', value: tracking.step },
@@ -77,54 +98,62 @@ export default function ProductionDetail() {
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
-          <nav className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-            <Link to="/production" className="hover:text-blue-600">Produksi</Link>
-            <span className="mx-2">/</span>
-            <span className="text-slate-900 dark:text-slate-100 truncate">{tracking.step}</span>
+          <nav className="text-xs text-slate-400 dark:text-slate-500 mb-1.5">
+            <Link to="/production" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Produksi</Link>
+            <span className="text-slate-300 dark:text-slate-600 mx-1">/</span>
+            <span className="text-slate-600 dark:text-slate-400 truncate">{tracking.step}</span>
           </nav>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">{tracking.step}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">{tracking.step}</h1>
+            <StatusBadge status={tracking.status} />
+          </div>
         </div>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => navigate('/production')} className="w-full sm:w-auto">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali
+          </Button>
           {nextStatusMap[tracking.status] && (
-            <Button onClick={handleAdvanceStatus} loading={updateMutation.isPending}>
+            <Button onClick={handleAdvanceStatus} loading={updateMutation.isPending} className="w-full sm:w-auto">
               {tracking.status === 'pending' ? <Play className="h-4 w-4 mr-1.5" /> : <CheckCircle className="h-4 w-4 mr-1.5" />}
               {nextStatusLabel[tracking.status]}
             </Button>
           )}
           {tracking.status !== 'completed' && (
-            <Button variant="secondary" onClick={() => navigate(`/production/${uuid}/edit`)}><Pencil className="h-4 w-4 mr-1.5" /> Edit</Button>
+            <Button variant="secondary" onClick={() => navigate(`/production/${uuid}/edit`)} className="w-full sm:w-auto">
+              <Pencil className="h-4 w-4 mr-1.5" /> Edit
+            </Button>
           )}
-          <Button variant="danger" onClick={() => setShowDelete(true)}><Trash2 className="h-4 w-4 mr-1.5" /> Hapus</Button>
+          <Button variant="danger" onClick={() => setShowDelete(true)} className="w-full sm:w-auto">
+            <Trash2 className="h-4 w-4 mr-1.5" /> Hapus
+          </Button>
         </div>
       </div>
 
+      {/* Content */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Informasi Tracking</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Informasi Tracking</h2>
         </CardHeader>
         <CardBody>
-          <div className="flex items-center gap-2 mb-4">
-            <StatusBadge status={tracking.status} />
-          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {infoItems.map((item) => (
-              <div key={item.label}>
-                <dt className="text-sm text-slate-500 dark:text-slate-400">{item.label}</dt>
-                <dd className="mt-1 text-sm text-slate-900 dark:text-slate-100">{item.value}</dd>
+            {mainFields.map((item) => (
+              <div key={item.label} className="space-y-1">
+                <dt className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">{item.label}</dt>
+                <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.value}</dd>
               </div>
             ))}
           </div>
         </CardBody>
       </Card>
 
-      <div className="flex justify-start">
-        <Button variant="secondary" onClick={() => navigate('/production')}><ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali ke Daftar</Button>
-      </div>
-
+      {/* Delete Modal */}
       <Modal isOpen={showDelete} onClose={() => setShowDelete(false)} title="Hapus Tracking" size="sm">
-        <p className="text-slate-600 dark:text-slate-400 mb-6">Yakin ingin menghapus tracking <strong>{tracking.step}</strong>?</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center">
+          Yakin ingin menghapus tracking <strong className="text-slate-900 dark:text-slate-100">{tracking.step}</strong>?
+        </p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowDelete(false)}>Batal</Button>
           <Button variant="danger" loading={deleteMutation.isPending} onClick={handleDelete}>Hapus</Button>
