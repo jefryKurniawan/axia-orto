@@ -76,59 +76,6 @@ Dibangun dengan arsitektur **React SPA + Laravel API** yang ringan dan cepat, bi
 ### Audit Log
 ![Audit Log](./review/alog.png)
 
-## Review & Status Pengembangan
-
-### Skor Produksi: 7/10 — Siap produksi dengan beberapa perbaikan yang perlu dilakukan
-
-### Temuan Backend
-
-**Kritis (harus diperbaiki sebelum produksi):**
-1. **SyncController tanpa validasi dan pengecekan peran** — Endpoint `/api/sync/batch` menerima data mentah tanpa validasi dan tanpa pengecekan role. Semua pengguna yang sudah login (termasuk teknisi) bisa membuat/mengubah/menghapus pasien dan konsultasi melalui endpoint ini, melewati seluruh matrix izin.
-2. **BackupController `restore()` tanpa sanitasi path** — Parameter `filename` tidak menggunakan `basename()` dan tidak mengecek ekstensi `.sql.gz`, berbeda dengan `download()` dan `destroy()` yang sudah benar.
-
-**Sedang:**
-3. **InventoryController tidak memperbarui cache** — `store()`, `update()`, `destroy()`, dan `adjustStock()` tidak memanggil `CacheHelper::bumpVersion('inventory')`, sehingga data kadaluarsa akan disajikan sampai TTL 300 detik habis.
-4. **CORS terlalu longgar** — `allowed_methods: ['*']` dan `allowed_headers: ['*']` di `config/cors.php` seharusnya dibatasi ke metode dan header yang benar-benar dipakai.
-5. **BackupController membocorkan password** — Saat `.my.cnf` tidak tersedia, password MySQL dikirim via argumen CLI (`-p`), terlihat oleh pengguna lain di shared hosting melalui `ps aux`.
-6. **RoleMiddleware mengembalikan redirect** — Menggunakan `redirect()->route('login')` yang menghasilkan HTTP 302, seharusnya mengembalikan JSON 401 untuk konsistensi API.
-7. **AuditController tidak memvalidasi parameter `type`** — Input pengguna langsung dipakai di query jika tidak ada di map, berpotensi menjadi vektor injeksi.
-
-**Ringan:**
-8. **Tidak ada logging percobaan login gagal** — Tidak ada mekanisme lockout akun atau pencatatan upaya login yang gagal.
-9. **`config/permissions.php` tidak pernah dipakai** — Matrix izin didefinisikan tapi tidak direferensikan oleh controller atau middleware manapun. Semua pengecekan role dilakukan inline.
-10. **Form Request tidak konsisten** — Beberapa endpoint menggunakan `$request->validate()` inline alih-alih FormRequest class, berisiko menyebabkan aturan validasi berbeda antara create dan update.
-11. **`.env.example` memiliki `APP_DEBUG=true`** — Deploy produksi yang menyalin file ini akan menampilkan debug mode, membocorkan stack trace dan variabel lingkungan.
-
-**Positif:**
-- Semua route API dilindungi `auth:sanctum` kecuali login dan health check
-- Semua query menggunakan parameterized queries (tidak ada SQL injection)
-- Perintah shell menggunakan `escapeshellarg()` pada semua argumen
-- CSRF handling benar untuk SPA auth
-- Dependensi minimal, tidak ada paket yang tidak perlu
-- Export job di-scope ke pengguna yang meminta
-
-### Temuan Frontend
-
-**Kritis:**
-1. **Tidak ada fokus trap di Modal** — Pengguna keyboard bisa berinteraksi dengan konten di belakang modal. Pelanggaran aksesibilitas.
-2. **Tidak ada pengecekan role di routing** — Semua pengguna yang sudah login bisa mengakses semua route di client. Backend tetap menolak akses, tapi UX buruk (pengguna melihat halaman, lalu dapat error API).
-
-**Sedang:**
-3. **Dark class di-toggle di 3 tempat** — Logika mode gelap ada di `appStore.ts`, `useTheme.ts`, dan `App.tsx`. Fragil, seharusnya satu sumber kebenaran.
-4. **`useImportPatients` melewati `api` client** — Menggunakan `fetch` langsung, melewatkan error handling terpusat dan melempar objek mentah alih-alih `Error`.
-5. **Auth failure yang diam** — Semua error dari `/me` diperlakukan sebagai "belum login", termasuk error server 500.
-6. **Logout tanpa penanganan error** — Jika API gagal, status `loggingOut` terjebak selamanya.
-
-**Ringan:**
-7. **Tidak ada timeout API** — Request yang menggantung membuat UI tetap dalam status loading tanpa batas.
-8. **`recharts` tidak di-split** — Library grafik (~200KB) masuk ke bundle utama, seharusnya di-chunk terpisah.
-9. **`key={useLocation().pathname}`** di AppLayout memaksa remount penuh pada setiap perpindahan halaman, menghancurkan state lokal komponen.
-10. **Toast auto-dismiss tidak cleanup** — Timeout tetap berjalan meskipun komponen sudah unmount.
-
-### Kesimpulan
-
-Arsitektur dan pola kode secara keseluruhan solid untuk shared hosting. Temuan kritis terutama di SyncController dan aksesibilitas Modal perlu diperbaiki sebelum deploy produksi. Temuan sedang (cache inventory, CORS, konsistensi validasi) sebaiknya diperbaiki dalam sprint berikutnya.
-
 ## Arsitektur
 
 ```
