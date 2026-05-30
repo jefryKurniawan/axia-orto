@@ -50,6 +50,20 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get();
 
+            // Low stock items
+            $lowStockCount = DB::table('inventory_items')
+                ->whereRaw('quantity <= reorder_level')
+                ->where('is_active', true)
+                ->count();
+
+            $lowStockItems = DB::table('inventory_items')
+                ->select('uuid', 'name', 'code', 'quantity', 'reorder_level', 'unit')
+                ->whereRaw('quantity <= reorder_level')
+                ->where('is_active', true)
+                ->orderByRaw('(quantity / NULLIF(reorder_level, 0))')
+                ->limit(5)
+                ->get();
+
             return [
                 'today' => [
                     'total' => $todaySummary->total ?? 0,
@@ -62,6 +76,8 @@ class DashboardController extends Controller
                 'active_doctors' => $activeDoctors,
                 'new_patients_month' => $newPatientsMonth,
                 'recent_consultations' => $recentConsultations,
+                'low_stock_count' => $lowStockCount,
+                'low_stock_items' => $lowStockItems,
             ];
         });
 

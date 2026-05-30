@@ -6,12 +6,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Cacheable;
+use App\Models\Traits\Auditable;
 use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
 use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
 
 class Payment extends Model
 {
-    use HasFactory, Cacheable;
+    use HasFactory, Cacheable, Auditable;
 
     protected $fillable = [
         'uuid',

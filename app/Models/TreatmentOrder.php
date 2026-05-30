@@ -6,13 +6,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Cacheable;
+use App\Models\Traits\Auditable;
 use App\Models\Patient;
 use App\Models\Consultation;
 use App\Models\User;
 
 class TreatmentOrder extends Model
 {
-    use HasFactory, Cacheable;
+    use HasFactory, Cacheable, Auditable;
 
     protected $fillable = [
         'uuid',

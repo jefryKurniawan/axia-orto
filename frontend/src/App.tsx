@@ -25,6 +25,10 @@ const ProductionList = lazy(() => import('./pages/production/ProductionList'))
 const ProductionDetail = lazy(() => import('./pages/production/ProductionDetail'))
 const ProductionForm = lazy(() => import('./pages/production/ProductionForm'))
 const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'))
+const InventoryList = lazy(() => import('./pages/inventory/InventoryList'))
+const InventoryForm = lazy(() => import('./pages/inventory/InventoryForm'))
+const InventoryDetail = lazy(() => import('./pages/inventory/InventoryDetail'))
+const AuditLogList = lazy(() => import('./pages/audit/AuditLogList'))
 
 function Loading() {
   return (
@@ -73,6 +77,11 @@ export default function App() {
             <Route path="/production/:uuid" element={<ProductionDetail />} />
             <Route path="/production/:uuid/edit" element={<ProductionForm />} />
             <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/inventory" element={<InventoryList />} />
+            <Route path="/inventory/create" element={<InventoryForm />} />
+            <Route path="/inventory/:uuid" element={<InventoryDetail />} />
+            <Route path="/inventory/:uuid/edit" element={<InventoryForm />} />
+            <Route path="/audit-logs" element={<AuditLogList />} />
             <Route path="/register" element={<Register />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

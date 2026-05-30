@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../lib/api'
+import { api, getXsrfToken } from '../lib/api'
 import { addToQueue, getPendingCount } from '../lib/offlineQueue'
 import { useAppStore } from '../stores/appStore'
 import type { Patient } from '../types'
@@ -59,6 +59,30 @@ export function useDeletePatient() {
         return { success: true, message: 'Dihapus offline' }
       }
       return api.delete(`/patients/${uuid}`)
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] }),
+  })
+}
+
+export function useImportPatients() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/patients/import', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-XSRF-TOKEN': getXsrfToken(),
+        },
+      })
+      const data = await res.json()
+      if (!res.ok) throw data
+      return data
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] }),
   })

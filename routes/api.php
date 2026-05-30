@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductionController;
 use App\Http\Controllers\Api\ExportController;
+use App\Http\Controllers\Api\InventoryController;
+use App\Http\Controllers\Api\AuditController;
 
 // Auth (public)
 Route::post('/login', [AuthController::class, 'login']);
@@ -33,6 +35,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/patients', [PatientController::class, 'index']);
     Route::get('/patients/stats', [PatientController::class, 'stats']);
+    Route::post('/patients/import', [PatientController::class, 'import']);
     Route::get('/patients/{uuid}', [PatientController::class, 'show']);
     Route::post('/patients', [PatientController::class, 'store']);
     Route::put('/patients/{uuid}', [PatientController::class, 'update']);
@@ -98,6 +101,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/exports', [ExportController::class, 'store']);
     Route::get('/exports/{uuid}', [ExportController::class, 'show']);
     Route::get('/exports/{uuid}/download', [ExportController::class, 'download']);
+});
+
+// Inventory
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/inventory', [InventoryController::class, 'index']);
+    Route::get('/inventory/stats', [InventoryController::class, 'stats']);
+    Route::get('/inventory/low-stock', [InventoryController::class, 'lowStock']);
+    Route::get('/inventory/{uuid}', [InventoryController::class, 'show']);
+    Route::post('/inventory', [InventoryController::class, 'store']);
+    Route::put('/inventory/{uuid}', [InventoryController::class, 'update']);
+    Route::delete('/inventory/{uuid}', [InventoryController::class, 'destroy']);
+    Route::post('/inventory/{uuid}/adjust', [InventoryController::class, 'adjustStock']);
+    Route::get('/inventory/{uuid}/transactions', [InventoryController::class, 'transactions']);
+});
+
+// Audit Logs (admin only)
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/audit-logs', [AuditController::class, 'index']);
+    Route::get('/audit-logs/{type}/{id}', [AuditController::class, 'forModel']);
 });
 
 // Health check

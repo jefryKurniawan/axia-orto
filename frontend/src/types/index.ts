@@ -200,6 +200,64 @@ export interface DashboardStats {
   active_doctors: number
   new_patients_month: number
   recent_consultations: Consultation[]
+  low_stock_count: number
+  low_stock_items: { uuid: string; name: string; code: string; quantity: number; reorder_level: number; unit: string }[]
+}
+
+// Inventory Item
+export interface InventoryItem {
+  id: number
+  uuid: string
+  code: string
+  name: string
+  description?: string
+  category: 'bahan_baku' | 'komponen' | 'alat_jadi'
+  quantity: number
+  unit: string
+  price: number
+  reorder_level: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// Inventory Transaction
+export interface InventoryTransaction {
+  id: number
+  uuid: string
+  inventory_item_id: number
+  type: 'masuk' | 'keluar' | 'adjustment'
+  quantity: number
+  reference_type?: string
+  reference_id?: number
+  notes?: string
+  created_by?: number
+  created_by_name?: string
+  item_name?: string
+  created_at: string
+}
+
+// Inventory Stats
+export interface InventoryStats {
+  total_items: number
+  active_items: number
+  low_stock_count: number
+  total_inventory_value: number
+  by_category: Record<string, number>
+}
+
+// Audit Log
+export interface AuditLog {
+  id: number
+  user_id?: number
+  user_name?: string
+  auditable_type: string
+  auditable_id: number
+  event: 'created' | 'updated' | 'deleted'
+  old_values?: Record<string, unknown>
+  new_values?: Record<string, unknown>
+  ip_address?: string
+  created_at: string
 }
 
 // API Response

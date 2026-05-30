@@ -5,8 +5,10 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Consultation;
+use App\Models\InventoryItem;
 use App\Models\Payment;
 use App\Observers\ConsultationObserver;
+use App\Observers\InventoryObserver;
 use App\Observers\PaymentObserver;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         // Register observers
         Consultation::observe(ConsultationObserver::class);
         Payment::observe(PaymentObserver::class);
+        InventoryItem::observe(InventoryObserver::class);
 
         // Define gates for role-based access
         Gate::define('access-consultations', function ($user) {

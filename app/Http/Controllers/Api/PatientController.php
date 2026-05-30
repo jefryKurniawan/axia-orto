@@ -9,6 +9,7 @@ use App\Models\Patient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PatientController extends Controller
 {
@@ -158,5 +159,116 @@ class PatientController extends Controller
         });
 
         return response()->json(['success' => true, 'data' => $stats]);
+    }
+
+    public function import(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $file = $request->file('file');
+        $handle = fopen($file->getPathname(), 'r');
+
+        if (!$handle) {
+            return response()->json(['success' => false, 'message' => 'Gagal membaca file.'], 422);
+        }
+
+        // Read and validate header
+        $header = fgetcsv($handle);
+        $expectedHeader = ['name', 'nik', 'medical_record_number', 'date_of_birth', 'gender', 'phone', 'address', 'insurance_type', 'blood_type'];
+
+        if ($header === false || array_map('trim', $header) !== $expectedHeader) {
+            fclose($handle);
+            return response()->json([
+                'success' => false,
+                'message' => 'Format CSV tidak sesuai. Header harus: ' . implode(',', $expectedHeader),
+            ], 422);
+        }
+
+        $imported = 0;
+        $skipped = 0;
+        $errors = [];
+        $rowNum = 1;
+        $patients = [];
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNum++;
+
+            if (count($row) < 9) {
+                $errors[] = ['row' => $rowNum, 'message' => 'Jumlah kolom tidak lengkap.'];
+                $skipped++;
+                continue;
+            }
+
+            [$name, $nik, $mrn, $dob, $gender, $phone, $address, $insurance, $bloodType] = array_map('trim', $row);
+
+            // Validate required fields
+            if ($name === '') {
+                $errors[] = ['row' => $rowNum, 'message' => 'Nama wajib diisi.'];
+                $skipped++;
+                continue;
+            }
+
+            if (!in_array($gender, ['L', 'P'])) {
+                $errors[] = ['row' => $rowNum, 'message' => 'Gender harus L atau P.'];
+                $skipped++;
+                continue;
+            }
+
+            if ($dob !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dob)) {
+                $errors[] = ['row' => $rowNum, 'message' => 'Format tanggal lahir harus YYYY-MM-DD.'];
+                $skipped++;
+                continue;
+            }
+
+            if (!in_array($insurance, ['bpjs', 'mandiri', 'asuransi'])) {
+                $errors[] = ['row' => $rowNum, 'message' => 'Jaminan harus bpjs, mandiri, atau asuransi.'];
+                $skipped++;
+                continue;
+            }
+
+            // Auto-generate MRN if empty
+            if ($mrn === '') {
+                $mrn = 'MRN-' . date('Ymd') . '-' . str_pad(DB::table('patients')->count() + $imported + 1, 4, '0', STR_PAD_LEFT);
+            }
+
+            $patients[] = [
+                'uuid' => (string) Str::uuid(),
+                'medical_record_number' => $mrn,
+                'nik' => $nik !== '' ? $nik : null,
+                'name' => $name,
+                'date_of_birth' => $dob !== '' ? $dob : null,
+                'gender' => $gender,
+                'phone' => $phone !== '' ? $phone : null,
+                'address' => $address !== '' ? $address : null,
+                'insurance_type' => $insurance ?: 'mandiri',
+                'blood_type' => in_array($bloodType, ['A', 'B', 'AB', 'O']) ? $bloodType : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $imported++;
+        }
+
+        fclose($handle);
+
+        // Batch insert
+        if (!empty($patients)) {
+            foreach (array_chunk($patients, 100) as $chunk) {
+                DB::table('patients')->insert($chunk);
+            }
+            CacheHelper::bumpVersion('patients');
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'imported' => $imported,
+                'skipped' => $skipped,
+                'errors' => $errors,
+            ],
+            'message' => "{$imported} pasien berhasil diimport." . ($skipped > 0 ? " {$skipped} baris dilewati." : ''),
+        ]);
     }
 }

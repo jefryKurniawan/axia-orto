@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Trash2 } from 'lucide-react'
-import { usePatients, useDeletePatient } from '../../hooks/usePatients'
+import { Eye, Trash2, Upload } from 'lucide-react'
+import { usePatients, useDeletePatient, useImportPatients } from '../../hooks/usePatients'
 import { useToastStore } from '../../stores/toastStore'
 import { useDebounce } from '../../hooks/useDebounce'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
@@ -16,9 +16,13 @@ export default function PatientList() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<{ uuid: string; name: string } | null>(null)
+  const [showImport, setShowImport] = useState(false)
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: { row: number; message: string }[] } | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
   const debouncedSearch = useDebounce(search, 300)
   const { data, isLoading, error } = usePatients(page, debouncedSearch)
   const deleteMutation = useDeletePatient()
+  const importMutation = useImportPatients()
   const addToast = useToastStore((s) => s.addToast)
 
   const handleDelete = () => {
@@ -34,13 +38,43 @@ export default function PatientList() {
     })
   }
 
+  const handleImport = async () => {
+    const file = fileRef.current?.files?.[0]
+    if (!file) return
+    setImportResult(null)
+    try {
+      const res = await importMutation.mutateAsync(file)
+      setImportResult(res.data)
+      addToast('success', res.message)
+    } catch (err: unknown) {
+      const error = err as { message?: string }
+      addToast('error', error.message || 'Gagal import CSV.')
+    }
+  }
+
+  const downloadTemplate = () => {
+    const header = 'name,nik,medical_record_number,date_of_birth,gender,phone,address,insurance_type,blood_type\n'
+    const blob = new Blob([header], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'template_import_pasien.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Pasien</h1>
-        <Button onClick={() => navigate('/patients/create')} className="w-full sm:w-auto">
-          + Tambah Pasien
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button variant="secondary" onClick={() => setShowImport(true)} className="w-full sm:w-auto">
+            <Upload className="w-4 h-4 mr-2" /> Import CSV
+          </Button>
+          <Button onClick={() => navigate('/patients/create')} className="w-full sm:w-auto">
+            + Tambah Pasien
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -160,6 +194,38 @@ export default function PatientList() {
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Batal</Button>
           <Button variant="danger" loading={deleteMutation.isPending} onClick={handleDelete}>Hapus</Button>
+        </div>
+      </Modal>
+
+      {/* Import CSV Modal */}
+      <Modal isOpen={showImport} onClose={() => { setShowImport(false); setImportResult(null); if (fileRef.current) fileRef.current.value = '' }} title="Import Pasien dari CSV" size="md">
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+              Upload file CSV dengan format yang sesuai.{' '}
+              <button onClick={downloadTemplate} className="text-blue-600 dark:text-blue-400 hover:underline">Download template</button>
+            </p>
+            <input ref={fileRef} type="file" accept=".csv,.txt" className="w-full text-sm text-slate-600 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900/30 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50" />
+          </div>
+
+          {importResult && (
+            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-sm space-y-2">
+              <p className="text-green-700 dark:text-green-400 font-medium">{importResult.imported} pasien berhasil diimport</p>
+              {importResult.skipped > 0 && <p className="text-amber-700 dark:text-amber-400">{importResult.skipped} baris dilewati</p>}
+              {importResult.errors.length > 0 && (
+                <div className="max-h-40 overflow-y-auto">
+                  {importResult.errors.map((e, i) => (
+                    <p key={i} className="text-red-600 dark:text-red-400 text-xs">Baris {e.row}: {e.message}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => { setShowImport(false); setImportResult(null); if (fileRef.current) fileRef.current.value = '' }}>Tutup</Button>
+            <Button loading={importMutation.isPending} onClick={handleImport}>Import</Button>
+          </div>
         </div>
       </Modal>
     </div>

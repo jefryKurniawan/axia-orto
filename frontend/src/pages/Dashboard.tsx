@@ -3,7 +3,7 @@ import { useCountUp } from '../hooks/useCountUp'
 import { Card, CardBody } from '../components/ui/Card'
 import { StatusBadge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
-import { CalendarCheck, Users, UserCheck, UserPlus, ClipboardList } from 'lucide-react'
+import { CalendarCheck, Users, UserCheck, UserPlus, ClipboardList, AlertTriangle, Package } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 function StatCard({ label, value, color, icon: Icon }: { label: string; value: number; color: string; icon: LucideIcon }) {
@@ -75,6 +75,7 @@ export default function Dashboard() {
     { label: 'Total Pasien', value: data.total_patients, color: 'text-green-600 bg-green-50', icon: Users },
     { label: 'Dokter Aktif', value: data.active_doctors, color: 'text-purple-600 bg-purple-50', icon: UserCheck },
     { label: 'Pasien Baru (Bulan Ini)', value: data.new_patients_month, color: 'text-orange-600 bg-orange-50', icon: UserPlus },
+    { label: 'Stok Rendah', value: data.low_stock_count, color: 'text-red-600 bg-red-50', icon: AlertTriangle },
   ]
 
   return (
@@ -131,6 +132,32 @@ export default function Dashboard() {
           </CardBody>
         </Card>
       </div>
+
+      {/* Low stock alert */}
+      {data.low_stock_items && data.low_stock_items.length > 0 && (
+        <Card>
+          <CardBody>
+            <div className="flex items-center gap-2 mb-4">
+              <Package className="w-5 h-5 text-orange-500 dark:text-orange-400" />
+              <h2 className="font-semibold text-slate-900 dark:text-slate-100">Stok Rendah</h2>
+            </div>
+            <div className="space-y-3">
+              {data.low_stock_items.map((item) => (
+                <div key={item.uuid} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{item.code}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-orange-600 dark:text-orange-400">{item.quantity} {item.unit}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Min: {item.reorder_level}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+      )}
     </div>
   )
 }
