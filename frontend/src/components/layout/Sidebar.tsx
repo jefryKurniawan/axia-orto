@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAppStore } from '../../stores/appStore'
-import { LayoutDashboard, Users, Stethoscope, Building2, ClipboardList, CreditCard, Factory, X } from 'lucide-react'
+import { LayoutDashboard, Users, Stethoscope, Building2, ClipboardList, CreditCard, Factory, FileBarChart, X } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/orders', label: 'Order', icon: ClipboardList },
   { to: '/payments', label: 'Pembayaran', icon: CreditCard },
   { to: '/production', label: 'Produksi', icon: Factory },
+  { to: '/reports', label: 'Laporan', icon: FileBarChart },
 ]
 
 export function Sidebar() {

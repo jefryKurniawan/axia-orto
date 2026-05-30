@@ -140,6 +140,53 @@ export interface ProductionTracking {
   updated_at: string
 }
 
+// Invoice
+export interface Invoice {
+  id: number
+  uuid: string
+  invoice_number: string
+  treatment_order_id: number
+  invoice_date: string
+  due_date: string
+  subtotal: number
+  tax_amount: number
+  discount_amount: number
+  total_amount: number
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+  notes?: string
+  created_by?: number
+  order?: TreatmentOrder
+  created_at: string
+  updated_at: string
+}
+
+// Export Job
+export interface ExportJob {
+  id: number
+  uuid: string
+  requested_by: number
+  report_type: 'revenue' | 'patients' | 'orders' | 'payments'
+  parameters?: { date_from?: string; date_to?: string }
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  file_path?: string
+  error_message?: string
+  started_at?: string
+  completed_at?: string
+  created_at: string
+}
+
+// Daily Revenue Summary
+export interface DailyRevenueSummary {
+  date: string
+  total_revenue: number
+  cash_revenue: number
+  transfer_revenue: number
+  card_revenue: number
+  total_transactions: number
+  completed_transactions: number
+  pending_transactions: number
+}
+
 // Dashboard
 export interface DashboardStats {
   today: {

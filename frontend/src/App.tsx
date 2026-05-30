@@ -24,6 +24,7 @@ const PaymentForm = lazy(() => import('./pages/payments/PaymentForm'))
 const ProductionList = lazy(() => import('./pages/production/ProductionList'))
 const ProductionDetail = lazy(() => import('./pages/production/ProductionDetail'))
 const ProductionForm = lazy(() => import('./pages/production/ProductionForm'))
+const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'))
 
 function Loading() {
   return (
@@ -71,6 +72,7 @@ export default function App() {
             <Route path="/production/create" element={<ProductionForm />} />
             <Route path="/production/:uuid" element={<ProductionDetail />} />
             <Route path="/production/:uuid/edit" element={<ProductionForm />} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/register" element={<Register />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

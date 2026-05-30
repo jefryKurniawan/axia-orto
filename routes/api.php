@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductionController;
+use App\Http\Controllers\Api\ExportController;
 
 // Auth (public)
 Route::post('/login', [AuthController::class, 'login']);
@@ -89,6 +90,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/production/{uuid}', [ProductionController::class, 'update']);
     Route::get('/production/order/{orderUuid}', [ProductionController::class, 'byOrder']);
     Route::delete('/production/{uuid}', [ProductionController::class, 'destroy']);
+});
+
+// Exports
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/exports', [ExportController::class, 'index']);
+    Route::post('/exports', [ExportController::class, 'store']);
+    Route::get('/exports/{uuid}', [ExportController::class, 'show']);
+    Route::get('/exports/{uuid}/download', [ExportController::class, 'download']);
 });
 
 // Health check
