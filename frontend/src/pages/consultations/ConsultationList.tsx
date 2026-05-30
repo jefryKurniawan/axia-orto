@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Eye, Trash2 } from 'lucide-react'
 import { useConsultations, useDeleteConsultation } from '../../hooks/useConsultations'
 import { useDebounce } from '../../hooks/useDebounce'
 import { useToastStore } from '../../stores/toastStore'
@@ -102,8 +103,20 @@ export default function ConsultationList() {
                         <td className="py-3 px-2 text-center"><StatusBadge status={c.status} /></td>
                         <td className="py-3 px-2">
                           <div className="flex justify-center gap-1">
-                            <Button size="sm" variant="ghost" onClick={() => navigate(`/consultations/${c.uuid}`)}>Detail</Button>
-                            <Button size="sm" variant="danger" onClick={() => setDeleteTarget({ uuid: c.uuid, patient: c.patient_name || '-' })}>Hapus</Button>
+                            <button
+                              onClick={() => navigate(`/consultations/${c.uuid}`)}
+                              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                              title="Detail"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget({ uuid: c.uuid, patient: c.patient_name || '-' })}
+                              className="p-1.5 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              title="Hapus"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>

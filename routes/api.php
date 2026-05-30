@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Api\ConsultationController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\SyncController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ProductionController;
 
 // Auth (public)
 Route::post('/login', [AuthController::class, 'login']);
@@ -53,6 +56,39 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/services', [ServiceController::class, 'store']);
     Route::put('/services/{uuid}', [ServiceController::class, 'update']);
     Route::delete('/services/{uuid}', [ServiceController::class, 'destroy']);
+});
+
+// Orders
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/stats', [OrderController::class, 'stats']);
+    Route::get('/orders/{uuid}', [OrderController::class, 'show']);
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::put('/orders/{uuid}', [OrderController::class, 'update']);
+    Route::patch('/orders/{uuid}/status', [OrderController::class, 'updateStatus']);
+    Route::delete('/orders/{uuid}', [OrderController::class, 'destroy']);
+});
+
+// Payments
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/payments', [PaymentController::class, 'index']);
+    Route::get('/payments/stats', [PaymentController::class, 'stats']);
+    Route::get('/payments/{uuid}', [PaymentController::class, 'show']);
+    Route::post('/payments', [PaymentController::class, 'store']);
+    Route::put('/payments/{uuid}', [PaymentController::class, 'update']);
+    Route::patch('/payments/{uuid}/status', [PaymentController::class, 'updateStatus']);
+    Route::get('/payments/order/{orderUuid}', [PaymentController::class, 'byOrder']);
+    Route::delete('/payments/{uuid}', [PaymentController::class, 'destroy']);
+});
+
+// Production Tracking
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/production', [ProductionController::class, 'index']);
+    Route::get('/production/{uuid}', [ProductionController::class, 'show']);
+    Route::post('/production', [ProductionController::class, 'store']);
+    Route::put('/production/{uuid}', [ProductionController::class, 'update']);
+    Route::get('/production/order/{orderUuid}', [ProductionController::class, 'byOrder']);
+    Route::delete('/production/{uuid}', [ProductionController::class, 'destroy']);
 });
 
 // Health check

@@ -53,6 +53,12 @@ export const api = {
 
   delete: <T>(url: string) =>
     request<ApiResponse<T>>(url, { method: 'DELETE' }),
+
+  patch: <T>(url: string, body?: unknown) =>
+    request<ApiResponse<T>>(url, {
+      method: 'PATCH',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
 }
 
 interface ApiResponse<T> {

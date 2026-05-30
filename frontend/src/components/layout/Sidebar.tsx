@@ -1,13 +1,16 @@
 import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAppStore } from '../../stores/appStore'
-import { LayoutDashboard, Users, Stethoscope, Building2, Bone, X } from 'lucide-react'
+import { LayoutDashboard, Users, Stethoscope, Building2, ClipboardList, CreditCard, Factory, X } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/patients', label: 'Pasien', icon: Users },
   { to: '/consultations', label: 'Konsultasi', icon: Stethoscope },
   { to: '/services', label: 'Layanan', icon: Building2 },
+  { to: '/orders', label: 'Order', icon: ClipboardList },
+  { to: '/payments', label: 'Pembayaran', icon: CreditCard },
+  { to: '/production', label: 'Produksi', icon: Factory },
 ]
 
 export function Sidebar() {
@@ -62,7 +65,7 @@ export function Sidebar() {
               )}
             </>
           ) : (
-            !isMobile && <Bone className="w-6 h-6 text-blue-600 mx-auto" />
+            !isMobile && <LayoutDashboard className="w-6 h-6 text-blue-600 mx-auto" />
           )}
         </div>
 

@@ -48,7 +48,7 @@ export default function PatientDetail() {
     { label: 'Alamat', value: patient.address || '-' },
     { label: 'Kontak Darurat', value: patient.emergency_contact || '-' },
     { label: 'Golongan Darah', value: patient.blood_type || '-' },
-    { label: 'Alergi', value: patient.allergies?.length ? patient.allergies.join(', ') : '-' },
+    { label: 'Alergi', value: Array.isArray(patient.allergies) ? patient.allergies.join(', ') : (patient.allergies || '-') },
   ]
 
   return (

@@ -16,6 +16,14 @@ const ConsultationForm = lazy(() => import('./pages/consultations/ConsultationFo
 const ServiceList = lazy(() => import('./pages/services/ServiceList'))
 const ServiceForm = lazy(() => import('./pages/services/ServiceForm'))
 const Register = lazy(() => import('./pages/Register'))
+const OrderList = lazy(() => import('./pages/orders/OrderList'))
+const OrderForm = lazy(() => import('./pages/orders/OrderForm'))
+const OrderDetail = lazy(() => import('./pages/orders/OrderDetail'))
+const PaymentList = lazy(() => import('./pages/payments/PaymentList'))
+const PaymentForm = lazy(() => import('./pages/payments/PaymentForm'))
+const ProductionList = lazy(() => import('./pages/production/ProductionList'))
+const ProductionDetail = lazy(() => import('./pages/production/ProductionDetail'))
+const ProductionForm = lazy(() => import('./pages/production/ProductionForm'))
 
 function Loading() {
   return (
@@ -52,6 +60,17 @@ export default function App() {
             <Route path="/services" element={<ServiceList />} />
             <Route path="/services/create" element={<ServiceForm />} />
             <Route path="/services/:uuid/edit" element={<ServiceForm />} />
+            <Route path="/orders" element={<OrderList />} />
+            <Route path="/orders/create" element={<OrderForm />} />
+            <Route path="/orders/:uuid" element={<OrderDetail />} />
+            <Route path="/orders/:uuid/edit" element={<OrderForm />} />
+            <Route path="/payments" element={<PaymentList />} />
+            <Route path="/payments/create" element={<PaymentForm />} />
+            <Route path="/payments/:uuid" element={<PaymentForm />} />
+            <Route path="/production" element={<ProductionList />} />
+            <Route path="/production/create" element={<ProductionForm />} />
+            <Route path="/production/:uuid" element={<ProductionDetail />} />
+            <Route path="/production/:uuid/edit" element={<ProductionForm />} />
             <Route path="/register" element={<Register />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

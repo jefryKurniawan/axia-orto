@@ -16,7 +16,7 @@ class CacheHelper
             ->where('module_name', $module)
             ->first();
 
-        return $row ? (int) $row->version : 1;
+        return $row ? (int) $row->version : 0;
     }
 
     /**

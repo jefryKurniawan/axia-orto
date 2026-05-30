@@ -41,7 +41,7 @@ class OrderItem extends Model
     // Scopes
     public function scopeByOrder($query, $orderId)
     {
-        return $query->where('order_id', $orderId);
+        return $query->where('treatment_order_id', $orderId);
     }
 
     public function scopeByService($query, $serviceId)

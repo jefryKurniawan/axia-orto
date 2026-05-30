@@ -13,7 +13,7 @@ class ProductionTracking extends Model
 {
     use HasFactory, Cacheable;
 
-    protected $table = 'production_tracking';
+    protected $table = 'production_trackings';
 
     protected $fillable = [
         'uuid',
@@ -22,6 +22,7 @@ class ProductionTracking extends Model
         'status',
         'notes',
         'assigned_to',
+        'completed_by',
         'started_at',
         'completed_at',
     ];
@@ -36,6 +37,11 @@ class ProductionTracking extends Model
         return $this->belongsTo(TreatmentOrder::class, 'treatment_order_id');
     }
 
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
     public function completedBy()
     {
         return $this->belongsTo(User::class, 'completed_by');
@@ -44,21 +50,21 @@ class ProductionTracking extends Model
     // Scopes
     public function scopeCurrentStage($query, $orderId)
     {
-        return $query->where('order_id', $orderId)
+        return $query->where('treatment_order_id', $orderId)
             ->whereNull('completed_at')
             ->latest();
     }
 
     public function scopeCompletedStages($query, $orderId)
     {
-        return $query->where('order_id', $orderId)
+        return $query->where('treatment_order_id', $orderId)
             ->whereNotNull('completed_at')
             ->orderBy('completed_at');
     }
 
-    public function scopeByStage($query, $stage)
+    public function scopeByStep($query, $step)
     {
-        return $query->where('production_stage', $stage);
+        return $query->where('step', $step);
     }
 
     // Cache Methods

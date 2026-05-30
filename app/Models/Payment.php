@@ -18,10 +18,11 @@ class Payment extends Model
         'treatment_order_id',
         'payment_number',
         'payment_date',
-        'method',
+        'payment_method',
         'amount',
         'status',
         'notes',
+        'created_by',
     ];
 
     protected $casts = [
@@ -58,7 +59,7 @@ class Payment extends Model
 
     public function scopeByOrder($query, $orderId)
     {
-        return $query->where('order_id', $orderId);
+        return $query->where('treatment_order_id', $orderId);
     }
 
     public function scopeRecent($query, $days = 30)

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Pencil, Trash2 } from 'lucide-react'
 import { useServices, useDeleteService } from '../../hooks/useServices'
 import { useDebounce } from '../../hooks/useDebounce'
 import { useToastStore } from '../../stores/toastStore'
@@ -99,8 +100,20 @@ export default function ServiceList() {
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex justify-center gap-1">
-                            <Button size="sm" variant="ghost" onClick={() => navigate(`/services/${s.uuid}/edit`)}>Edit</Button>
-                            <Button size="sm" variant="danger" onClick={() => setDeleteTarget({ uuid: s.uuid, name: s.name })}>Hapus</Button>
+                            <button
+                              onClick={() => navigate(`/services/${s.uuid}/edit`)}
+                              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                              title="Edit"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget({ uuid: s.uuid, name: s.name })}
+                              className="p-1.5 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              title="Hapus"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>

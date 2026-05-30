@@ -62,6 +62,84 @@ export interface Service {
   is_active: boolean
 }
 
+// Order Item
+export interface OrderItem {
+  id: number
+  treatment_order_id: number
+  service_id: number
+  quantity: number
+  unit_price: number
+  total_price: number
+  specifications?: Record<string, unknown>
+  service_name?: string
+  service_code?: string
+}
+
+// Treatment Order
+export interface TreatmentOrder {
+  id: number
+  uuid: string
+  order_number: string
+  patient_id: number
+  consultation_id?: number
+  order_date: string
+  delivery_date?: string
+  status: 'draft' | 'confirmed' | 'production' | 'ready' | 'delivered' | 'cancelled'
+  total_amount: number
+  notes?: string
+  created_by: number
+  patient_name?: string
+  medical_record_number?: string
+  created_by_name?: string
+  patient?: Patient
+  consultation?: Consultation
+  order_items?: OrderItem[]
+  payments?: Payment[]
+  production_trackings?: ProductionTracking[]
+  created_at: string
+  updated_at: string
+}
+
+// Payment
+export interface Payment {
+  id: number
+  uuid: string
+  treatment_order_id: number
+  payment_number: string
+  payment_date: string
+  payment_method: 'cash' | 'transfer' | 'debit_card' | 'credit_card'
+  amount: number
+  status: 'pending' | 'completed' | 'failed' | 'refunded'
+  notes?: string
+  created_by?: number
+  order_number?: string
+  patient_name?: string
+  order?: TreatmentOrder
+  created_at: string
+  updated_at: string
+}
+
+// Production Tracking
+export interface ProductionTracking {
+  id: number
+  uuid: string
+  treatment_order_id: number
+  step: string
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+  notes?: string
+  assigned_to: number
+  completed_by?: number
+  started_at?: string
+  completed_at?: string
+  order_number?: string
+  order_uuid?: string
+  patient_name?: string
+  assigned_to_name?: string
+  order?: TreatmentOrder
+  created_at: string
+  updated_at: string
+}
+
 // Dashboard
 export interface DashboardStats {
   today: {

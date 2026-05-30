@@ -27,12 +27,23 @@ export function Badge({ children, variant = 'default', className = '' }: BadgePr
 
 export function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; variant: BadgeVariant }> = {
+    // Consultation statuses
     scheduled: { label: 'Dijadwalkan', variant: 'warning' },
     in_progress: { label: 'Berlangsung', variant: 'info' },
     completed: { label: 'Selesai', variant: 'success' },
     cancelled: { label: 'Dibatalkan', variant: 'danger' },
     active: { label: 'Aktif', variant: 'success' },
     inactive: { label: 'Nonaktif', variant: 'default' },
+    // Order statuses
+    draft: { label: 'Draft', variant: 'default' },
+    confirmed: { label: 'Dikonfirmasi', variant: 'info' },
+    production: { label: 'Produksi', variant: 'warning' },
+    ready: { label: 'Siap', variant: 'success' },
+    delivered: { label: 'Dikirim', variant: 'success' },
+    // Payment statuses
+    pending: { label: 'Pending', variant: 'warning' },
+    failed: { label: 'Gagal', variant: 'danger' },
+    refunded: { label: 'Refund', variant: 'default' },
   }
 
   const { label, variant } = map[status] ?? { label: status, variant: 'default' }
