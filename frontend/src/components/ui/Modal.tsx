@@ -35,11 +35,11 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className={`relative bg-white dark:bg-slate-900 sm:rounded-xl shadow-xl w-full ${sizes[size]} sm:mx-4 max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-xl sm:rounded-xl`}>
+      <div className="fixed inset-0 bg-black/50 animate-fade-in" onClick={onClose} />
+      <div className={`relative bg-white dark:bg-slate-900 sm:rounded-xl shadow-xl w-full ${sizes[size]} sm:mx-4 max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-xl sm:rounded-xl animate-modal-enter`}>
         <div className="relative flex items-center justify-center px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 text-center">{title}</h2>
-          <button onClick={onClose} className="absolute right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+          <button onClick={onClose} className="absolute right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:scale-110 active:scale-95 transition-all duration-200">
             <X className="w-5 h-5" />
           </button>
         </div>

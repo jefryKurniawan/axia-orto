@@ -16,6 +16,17 @@ export function Header() {
   const [loggingOut, setLoggingOut] = useState(false)
   const [syncing, setSyncing] = useState(false)
 
+  const handleThemeToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const btn = e.currentTarget
+    const ripple = btn.querySelector('.theme-ripple') as HTMLElement
+    if (ripple) {
+      ripple.style.animation = 'none'
+      ripple.offsetHeight // force reflow
+      ripple.style.animation = 'theme-ripple-expand 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) both'
+    }
+    toggleTheme()
+  }
+
   const handleLogout = async () => {
     setLoggingOut(true)
     await logout()
@@ -27,7 +38,7 @@ export function Header() {
         <div className="flex items-center gap-3">
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all duration-200"
             aria-label="Toggle sidebar"
           >
             {sidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeft className="w-5 h-5" />}
@@ -36,11 +47,14 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            onClick={handleThemeToggle}
+            className="theme-toggle-btn relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all duration-200 overflow-visible"
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            <span className="theme-ripple absolute inset-0 rounded-full pointer-events-none" />
+            <span className="relative z-10">
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </span>
           </button>
 
           {/* Sync status badge */}
@@ -58,7 +72,7 @@ export function Header() {
                   setSyncing(false)
                 }}
                 disabled={syncing}
-                className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors"
+                className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:scale-105 active:scale-95 transition-all duration-200"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">{pendingSyncCount} pending</span>
@@ -81,7 +95,7 @@ export function Header() {
             </div>
             <button
               onClick={() => setShowLogout(true)}
-              className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+              className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 hover:scale-105 active:scale-95 transition-all duration-200"
               aria-label="Logout"
             >
               <LogOut className="w-4 h-4" />

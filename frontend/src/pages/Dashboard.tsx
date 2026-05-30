@@ -89,8 +89,10 @@ export default function Dashboard() {
       <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {stats.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
+        {stats.map((stat, index) => (
+          <div key={stat.label} className="animate-stagger-in" style={{ animationDelay: `${index * 80}ms` }}>
+            <StatCard {...stat} />
+          </div>
         ))}
       </div>
 

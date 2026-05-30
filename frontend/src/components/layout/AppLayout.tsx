@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAppStore } from '../../stores/appStore'
 import { Sidebar } from './Sidebar'
@@ -29,7 +29,9 @@ export function AppLayout() {
       <div className="transition-all duration-300" style={{ marginLeft }}>
         <Header />
         <main className="p-4 lg:p-6">
-          <Outlet />
+          <div key={useLocation().pathname} className="animate-page-enter">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

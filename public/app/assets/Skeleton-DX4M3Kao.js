@@ -1,0 +1,1 @@
+import{t as e}from"./react-C0Fs0kvo.js";var t=e();function n({className:e=``}){return(0,t.jsx)(`div`,{className:`rounded animate-shimmer ${e}`})}function r({rows:e=5}){return(0,t.jsx)(`div`,{className:`space-y-3`,children:Array.from({length:e}).map((e,r)=>(0,t.jsx)(n,{className:`h-12 w-full`},r))})}export{r as n,n as t};

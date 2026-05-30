@@ -24,7 +24,7 @@ export function Table<T extends Record<string, unknown>>({
     return (
       <div className="space-y-3 p-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+          <div key={i} className="h-12 rounded animate-shimmer" />
         ))}
       </div>
     )
@@ -55,7 +55,7 @@ export function Table<T extends Record<string, unknown>>({
         </thead>
         <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-700">
           {data.map((item, idx) => (
-            <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+            <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors animate-stagger-in" style={{ animationDelay: `${Math.min(idx * 30, 300)}ms` }}>
               {columns.map((col) => (
                 <td key={col.key} className={`px-6 py-4 text-sm text-slate-900 dark:text-slate-100 ${col.className ?? ''}`}>
                   {col.render ? col.render(item) : String(item[col.key] ?? '-')}

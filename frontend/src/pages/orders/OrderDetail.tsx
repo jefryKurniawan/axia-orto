@@ -59,8 +59,8 @@ export default function OrderDetail() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-shimmer" />
       </div>
     )
   }
@@ -189,7 +189,7 @@ export default function OrderDetail() {
                         </Badge>
                         <button
                           onClick={() => navigate(`/production/${t.uuid}`)}
-                          className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:scale-110 active:scale-95 transition-all duration-200"
                           title="Detail"
                         >
                           <Eye className="w-4 h-4" />

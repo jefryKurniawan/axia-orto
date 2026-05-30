@@ -23,7 +23,7 @@ export function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg animate-slide-in ${bgColors[toast.type]}`}
+          className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg ${toast.exiting ? 'animate-slide-out' : 'animate-slide-in'} ${bgColors[toast.type]}`}
         >
           <span className="flex-shrink-0 mt-0.5">{icons[toast.type]}</span>
           <p className="flex-1 text-sm text-slate-700 dark:text-slate-300">{toast.message}</p>

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Trash2, Upload } from 'lucide-react'
+import { Eye, Trash2, Upload, FileSpreadsheet, Download, CheckCircle, AlertCircle, BarChart3 } from 'lucide-react'
 import { usePatients, useDeletePatient, useImportPatients } from '../../hooks/usePatients'
 import { useToastStore } from '../../stores/toastStore'
 import { useDebounce } from '../../hooks/useDebounce'
@@ -18,6 +18,8 @@ export default function PatientList() {
   const [deleteTarget, setDeleteTarget] = useState<{ uuid: string; name: string } | null>(null)
   const [showImport, setShowImport] = useState(false)
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: { row: number; message: string }[] } | null>(null)
+  const [fileName, setFileName] = useState('')
+  const [dragOver, setDragOver] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const debouncedSearch = useDebounce(search, 300)
   const { data, isLoading, error } = usePatients(page, debouncedSearch)
@@ -123,7 +125,7 @@ export default function PatientList() {
                           <div className="flex justify-center gap-1">
                             <button
                               onClick={() => navigate(`/patients/${p.uuid}`)}
-                              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:scale-110 active:scale-95 transition-all duration-200"
                               title="Detail"
                             >
                               <Eye className="w-4 h-4" />
@@ -198,33 +200,95 @@ export default function PatientList() {
       </Modal>
 
       {/* Import CSV Modal */}
-      <Modal isOpen={showImport} onClose={() => { setShowImport(false); setImportResult(null); if (fileRef.current) fileRef.current.value = '' }} title="Import Pasien dari CSV" size="md">
-        <div className="space-y-4">
-          <div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-              Upload file CSV dengan format yang sesuai.{' '}
-              <button onClick={downloadTemplate} className="text-blue-600 dark:text-blue-400 hover:underline">Download template</button>
-            </p>
-            <input ref={fileRef} type="file" accept=".csv,.txt" className="w-full text-sm text-slate-600 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900/30 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50" />
+      <Modal isOpen={showImport} onClose={() => { setShowImport(false); setImportResult(null); setFileName(''); if (fileRef.current) fileRef.current.value = '' }} title="Import Pasien dari CSV" size="md">
+        <div className="space-y-5">
+          {/* Template download */}
+          <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <FileSpreadsheet className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-300">Belum punya template?</p>
+              <p className="text-xs text-blue-700 dark:text-blue-400 mt-0.5">Gunakan template agar format CSV sesuai</p>
+            </div>
+            <button onClick={downloadTemplate} className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors flex-shrink-0">
+              <Download className="w-4 h-4" />
+              Template
+            </button>
           </div>
 
-          {importResult && (
-            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-sm space-y-2">
-              <p className="text-green-700 dark:text-green-400 font-medium">{importResult.imported} pasien berhasil diimport</p>
-              {importResult.skipped > 0 && <p className="text-amber-700 dark:text-amber-400">{importResult.skipped} baris dilewati</p>}
-              {importResult.errors.length > 0 && (
-                <div className="max-h-40 overflow-y-auto">
-                  {importResult.errors.map((e, i) => (
-                    <p key={i} className="text-red-600 dark:text-red-400 text-xs">Baris {e.row}: {e.message}</p>
-                  ))}
+          {/* Drop zone */}
+          <div
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer ${
+              dragOver
+                ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500'
+                : fileName
+                  ? 'border-green-300 bg-green-50/50 dark:bg-green-900/10 dark:border-green-600'
+                  : 'border-slate-300 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+            }`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0] && fileRef.current) { const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]); fileRef.current.files = dt.files; setFileName(e.dataTransfer.files[0].name) } }}
+            onClick={() => fileRef.current?.click()}
+          >
+            <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} />
+            {fileName ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-              )}
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{fileName}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Klik untuk ganti file</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-slate-400 dark:text-slate-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Seret file CSV ke sini</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">atau klik untuk memilih file</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Result */}
+          {importResult && (
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                <BarChart3 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Hasil Import</span>
+              </div>
+              <div className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span className="text-sm text-green-700 dark:text-green-400">{importResult.imported} pasien berhasil diimport</span>
+                </div>
+                {importResult.skipped > 0 && (
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm text-amber-700 dark:text-amber-400">{importResult.skipped} baris dilewati</span>
+                  </div>
+                )}
+                {importResult.errors.length > 0 && (
+                  <div className="mt-2 max-h-32 overflow-y-auto space-y-1">
+                    {importResult.errors.map((e, i) => (
+                      <p key={i} className="text-xs text-red-600 dark:text-red-400 pl-6">Baris {e.row}: {e.message}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => { setShowImport(false); setImportResult(null); if (fileRef.current) fileRef.current.value = '' }}>Tutup</Button>
-            <Button loading={importMutation.isPending} onClick={handleImport}>Import</Button>
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-1">
+            <Button variant="secondary" onClick={() => { setShowImport(false); setImportResult(null); setFileName(''); if (fileRef.current) fileRef.current.value = '' }}>Tutup</Button>
+            <Button loading={importMutation.isPending} onClick={handleImport} disabled={!fileName}>
+              <Upload className="w-4 h-4 mr-1.5" />
+              Import
+            </Button>
           </div>
         </div>
       </Modal>

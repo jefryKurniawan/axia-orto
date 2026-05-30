@@ -99,8 +99,8 @@ export default function ServiceForm() {
   if (isEdit && loadingExisting) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-shimmer" />
+        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-xl animate-shimmer" />
       </div>
     )
   }
