@@ -20,11 +20,19 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     credentials: 'same-origin',
   })
 
-  const data = await res.json()
+  // Handle non-JSON responses (HTML error pages, 500 errors, etc.)
+  let data: unknown
+  try {
+    data = await res.json()
+  } catch {
+    const err = new Error(`Server error (${res.status})`) as Error & { status?: number }
+    err.status = res.status
+    throw err
+  }
 
   if (!res.ok) {
-    const err = new Error(data.message || `HTTP ${res.status}`) as Error & { errors?: Record<string, string[]>; status?: number }
-    err.errors = data.errors
+    const err = new Error((data as { message?: string })?.message || `HTTP ${res.status}`) as Error & { errors?: Record<string, string[]>; status?: number }
+    err.errors = (data as { errors?: Record<string, string[]> })?.errors
     err.status = res.status
     throw err
   }
