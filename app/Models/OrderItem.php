@@ -5,11 +5,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Traits\Cacheable;
 
 class OrderItem extends Model
 {
-    use HasFactory, Cacheable;
+    use HasFactory;
 
     protected $fillable = [
         'treatment_order_id',

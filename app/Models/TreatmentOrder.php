@@ -5,15 +5,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Traits\Cacheable;
 use App\Models\Traits\Auditable;
+use App\Helpers\CacheHelper;
 use App\Models\Patient;
 use App\Models\Consultation;
 use App\Models\User;
 
 class TreatmentOrder extends Model
 {
-    use HasFactory, Cacheable, Auditable;
+    use HasFactory, Auditable;
 
     protected $fillable = [
         'uuid',
@@ -89,7 +89,8 @@ class TreatmentOrder extends Model
     // Cache Methods
     public static function getCachedRecentOrders($days = 30)
     {
-        return Cache::tags(['TreatmentOrder'])->remember("recent_orders.{$days}", 1800, function () use ($days) {
+        $key = CacheHelper::key('orders', 'recent', ['days' => $days]);
+        return CacheHelper::remember($key, 1800, function () use ($days) {
             return static::recent($days)
                 ->with(['patient', 'createdBy'])
                 ->orderBy('created_at', 'desc')
@@ -99,7 +100,8 @@ class TreatmentOrder extends Model
 
     public static function getCachedOrderStats()
     {
-        return Cache::tags(['TreatmentOrder'])->remember('order_stats', 3600, function () {
+        $key = CacheHelper::key('orders', 'stats');
+        return CacheHelper::remember($key, 3600, function () {
             return [
                 'total' => static::count(),
                 'draft' => static::where('status', 'draft')->count(),

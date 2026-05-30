@@ -5,13 +5,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Traits\Cacheable;
-use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
-use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
+use App\Helpers\CacheHelper;
+use Illuminate\Support\Facades\DB;
 
 class PatientMeasurement extends Model
 {
-    use HasFactory, Cacheable;
+    use HasFactory;
 
     protected $fillable = [
         'uuid',
@@ -62,7 +61,8 @@ class PatientMeasurement extends Model
     // Cache Methods
     public static function getCachedByPatient($patientId)
     {
-        return Cache::tags(['PatientMeasurement'])->remember("patient.{$patientId}.measurements", 3600, function () use ($patientId) {
+        $key = CacheHelper::key('patient_measurements', 'by_patient', ['id' => $patientId]);
+        return CacheHelper::remember($key, 3600, function () use ($patientId) {
             return static::where('patient_id', $patientId)
                 ->with(['consultation', 'createdBy'])
                 ->orderBy('created_at', 'desc')
@@ -72,7 +72,8 @@ class PatientMeasurement extends Model
 
     public static function getCachedRecentMeasurements($days = 30)
     {
-        return Cache::tags(['PatientMeasurement'])->remember("recent_measurements.{$days}", 1800, function () use ($days) {
+        $key = CacheHelper::key('patient_measurements', 'recent', ['days' => $days]);
+        return CacheHelper::remember($key, 1800, function () use ($days) {
             return static::recent($days)
                 ->with(['patient', 'consultation'])
                 ->orderBy('created_at', 'desc')

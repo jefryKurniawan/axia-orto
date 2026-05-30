@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditLog extends Model
 {
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'user_id',
         'auditable_type',
@@ -16,6 +18,7 @@ class AuditLog extends Model
         'new_values',
         'ip_address',
         'user_agent',
+        'created_at',
     ];
 
     protected $casts = [

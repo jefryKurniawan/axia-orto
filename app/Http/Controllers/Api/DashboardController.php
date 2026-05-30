@@ -64,6 +64,33 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get();
 
+            // Analytics: last 30 days trends
+            $thirtyDaysAgo = now()->subDays(30)->toDateString();
+
+            $revenueTrend = DB::table('daily_revenue_summaries')
+                ->select('date', 'total_revenue', 'total_transactions')
+                ->where('date', '>=', $thirtyDaysAgo)
+                ->orderBy('date')
+                ->get();
+
+            $consultationTrend = DB::table('daily_consultation_summaries')
+                ->select('date', 'total', 'completed', 'cancelled')
+                ->where('date', '>=', $thirtyDaysAgo)
+                ->orderBy('date')
+                ->get();
+
+            // Order status distribution
+            $orderStatusDistribution = DB::table('treatment_orders')
+                ->select('status', DB::raw('COUNT(*) as count'))
+                ->groupBy('status')
+                ->get();
+
+            // Production pipeline
+            $productionPipeline = DB::table('production_trackings')
+                ->select('step', 'status', DB::raw('COUNT(*) as count'))
+                ->groupBy('step', 'status')
+                ->get();
+
             return [
                 'today' => [
                     'total' => $todaySummary->total ?? 0,
@@ -78,6 +105,10 @@ class DashboardController extends Controller
                 'recent_consultations' => $recentConsultations,
                 'low_stock_count' => $lowStockCount,
                 'low_stock_items' => $lowStockItems,
+                'revenue_trend' => $revenueTrend,
+                'consultation_trend' => $consultationTrend,
+                'order_status_distribution' => $orderStatusDistribution,
+                'production_pipeline' => $productionPipeline,
             ];
         });
 

@@ -35,37 +35,33 @@ class GenerateReport implements ShouldQueue
             $dateFrom = $params['date_from'] ?? now()->subDays(30)->toDateString();
             $dateTo = $params['date_to'] ?? now()->toDateString();
 
-            $rows = match ($exportJob->report_type) {
-                'revenue' => $this->buildRevenueReport($dateFrom, $dateTo),
-                'patients' => $this->buildPatientsReport($dateFrom, $dateTo),
-                'orders' => $this->buildOrdersReport($dateFrom, $dateTo),
-                'payments' => $this->buildPaymentsReport($dateFrom, $dateTo),
-                default => throw new \InvalidArgumentException("Unknown report type: {$exportJob->report_type}"),
-            };
-
             $dir = now()->format('Y/m/d');
             $filename = "{$exportJob->uuid}.csv";
             $path = "reports/{$dir}/{$filename}";
 
             Storage::makeDirectory("reports/{$dir}");
 
-            $handle = Storage::disk('local')->path($path);
-            $fp = fopen($handle, 'w');
+            $filePath = Storage::disk('local')->path($path);
+            $fp = fopen($filePath, 'w');
 
-            if (!empty($rows)) {
-                // Header
-                fputcsv($fp, array_keys($rows[0]));
-                // Data
-                foreach ($rows as $row) {
-                    fputcsv($fp, $row);
-                }
-            }
+            $headerWritten = false;
+            $rowCount = 0;
+
+            match ($exportJob->report_type) {
+                'revenue' => $this->streamRevenueReport($fp, $dateFrom, $dateTo, $headerWritten, $rowCount),
+                'patients' => $this->streamPatientsReport($fp, $dateFrom, $dateTo, $headerWritten, $rowCount),
+                'orders' => $this->streamOrdersReport($fp, $dateFrom, $dateTo, $headerWritten, $rowCount),
+                'payments' => $this->streamPaymentsReport($fp, $dateFrom, $dateTo, $headerWritten, $rowCount),
+                default => throw new \InvalidArgumentException("Unknown report type: {$exportJob->report_type}"),
+            };
 
             fclose($fp);
 
             $exportJob->update([
                 'status' => 'completed',
                 'file_path' => $path,
+                'file_size' => Storage::disk('local')->size($path),
+                'row_count' => $rowCount,
                 'completed_at' => now(),
             ]);
         } catch (\Throwable $e) {
@@ -78,28 +74,32 @@ class GenerateReport implements ShouldQueue
         }
     }
 
-    private function buildRevenueReport(string $dateFrom, string $dateTo): array
+    private function streamRevenueReport($fp, string $dateFrom, string $dateTo, bool &$headerWritten, int &$rowCount): void
     {
-        return DB::table('daily_revenue_summaries')
+        $header = ['Tanggal', 'Total Pendapatan', 'Tunai', 'Transfer', 'Kartu', 'Total Transaksi', 'Transaksi Selesai', 'Transaksi Pending'];
+
+        DB::table('daily_revenue_summaries')
             ->whereBetween('date', [$dateFrom, $dateTo])
             ->orderBy('date')
-            ->get()
-            ->map(fn ($row) => [
-                'Tanggal' => $row->date,
-                'Total Pendapatan' => $row->total_revenue,
-                'Tunai' => $row->cash_revenue,
-                'Transfer' => $row->transfer_revenue,
-                'Kartu' => $row->card_revenue,
-                'Total Transaksi' => $row->total_transactions,
-                'Transaksi Selesai' => $row->completed_transactions,
-                'Transaksi Pending' => $row->pending_transactions,
-            ])
-            ->toArray();
+            ->cursor()
+            ->each(function ($row) use ($fp, $header, &$headerWritten, &$rowCount) {
+                if (!$headerWritten) {
+                    fputcsv($fp, $header, ',', '"', '');
+                    $headerWritten = true;
+                }
+                fputcsv($fp, [
+                    $row->date, $row->total_revenue, $row->cash_revenue, $row->transfer_revenue,
+                    $row->card_revenue, $row->total_transactions, $row->completed_transactions, $row->pending_transactions,
+                ], ',', '"', '');
+                $rowCount++;
+            });
     }
 
-    private function buildPatientsReport(string $dateFrom, string $dateTo): array
+    private function streamPatientsReport($fp, string $dateFrom, string $dateTo, bool &$headerWritten, int &$rowCount): void
     {
-        return DB::table('patients')
+        $header = ['No. RM', 'Nama', 'Gender', 'Tgl Lahir', 'Telepon', 'Asuransi', 'Total Konsultasi', 'Kunjungan Terakhir'];
+
+        DB::table('patients')
             ->leftJoin('consultations', 'patients.id', '=', 'consultations.patient_id')
             ->select(
                 'patients.medical_record_number',
@@ -122,23 +122,27 @@ class GenerateReport implements ShouldQueue
                 'patients.insurance_type'
             )
             ->orderBy('patients.name')
-            ->get()
-            ->map(fn ($row) => [
-                'No. RM' => $row->medical_record_number,
-                'Nama' => $row->name,
-                'Gender' => $row->gender === 'L' ? 'Laki-laki' : 'Perempuan',
-                'Tgl Lahir' => $row->date_of_birth,
-                'Telepon' => $row->phone ?? '-',
-                'Asuransi' => $row->insurance_type,
-                'Total Konsultasi' => $row->total_consultations,
-                'Kunjungan Terakhir' => $row->last_visit ?? '-',
-            ])
-            ->toArray();
+            ->cursor()
+            ->each(function ($row) use ($fp, $header, &$headerWritten, &$rowCount) {
+                if (!$headerWritten) {
+                    fputcsv($fp, $header, ',', '"', '');
+                    $headerWritten = true;
+                }
+                fputcsv($fp, [
+                    $row->medical_record_number, $row->name,
+                    $row->gender === 'L' ? 'Laki-laki' : 'Perempuan',
+                    $row->date_of_birth, $row->phone ?? '-', $row->insurance_type,
+                    $row->total_consultations, $row->last_visit ?? '-',
+                ], ',', '"', '');
+                $rowCount++;
+            });
     }
 
-    private function buildOrdersReport(string $dateFrom, string $dateTo): array
+    private function streamOrdersReport($fp, string $dateFrom, string $dateTo, bool &$headerWritten, int &$rowCount): void
     {
-        return DB::table('treatment_orders')
+        $header = ['No. Order', 'Tanggal', 'Pasien', 'No. RM', 'Total', 'Status', 'Tgl Kirim'];
+
+        DB::table('treatment_orders')
             ->join('patients', 'treatment_orders.patient_id', '=', 'patients.id')
             ->select(
                 'treatment_orders.order_number',
@@ -151,22 +155,26 @@ class GenerateReport implements ShouldQueue
             )
             ->whereBetween('treatment_orders.order_date', [$dateFrom, $dateTo])
             ->orderBy('treatment_orders.order_date', 'desc')
-            ->get()
-            ->map(fn ($row) => [
-                'No. Order' => $row->order_number,
-                'Tanggal' => $row->order_date,
-                'Pasien' => $row->patient_name,
-                'No. RM' => $row->medical_record_number,
-                'Total' => $row->total_amount,
-                'Status' => $row->status,
-                'Tgl Kirim' => $row->delivery_date ?? '-',
-            ])
-            ->toArray();
+            ->cursor()
+            ->each(function ($row) use ($fp, $header, &$headerWritten, &$rowCount) {
+                if (!$headerWritten) {
+                    fputcsv($fp, $header, ',', '"', '');
+                    $headerWritten = true;
+                }
+                fputcsv($fp, [
+                    $row->order_number, $row->order_date, $row->patient_name,
+                    $row->medical_record_number, $row->total_amount, $row->status,
+                    $row->delivery_date ?? '-',
+                ], ',', '"', '');
+                $rowCount++;
+            });
     }
 
-    private function buildPaymentsReport(string $dateFrom, string $dateTo): array
+    private function streamPaymentsReport($fp, string $dateFrom, string $dateTo, bool &$headerWritten, int &$rowCount): void
     {
-        return DB::table('payments')
+        $header = ['No. Pembayaran', 'Tanggal', 'Jumlah', 'Metode', 'Status', 'No. Order', 'Pasien'];
+
+        DB::table('payments')
             ->join('treatment_orders', 'payments.treatment_order_id', '=', 'treatment_orders.id')
             ->join('patients', 'treatment_orders.patient_id', '=', 'patients.id')
             ->select(
@@ -180,16 +188,17 @@ class GenerateReport implements ShouldQueue
             )
             ->whereBetween('payments.payment_date', [$dateFrom, $dateTo])
             ->orderBy('payments.payment_date', 'desc')
-            ->get()
-            ->map(fn ($row) => [
-                'No. Pembayaran' => $row->payment_number,
-                'Tanggal' => $row->payment_date,
-                'Pasien' => $row->patient_name,
-                'No. Order' => $row->order_number,
-                'Jumlah' => $row->amount,
-                'Metode' => $row->payment_method,
-                'Status' => $row->status,
-            ])
-            ->toArray();
+            ->cursor()
+            ->each(function ($row) use ($fp, $header, &$headerWritten, &$rowCount) {
+                if (!$headerWritten) {
+                    fputcsv($fp, $header, ',', '"', '');
+                    $headerWritten = true;
+                }
+                fputcsv($fp, [
+                    $row->payment_number, $row->payment_date, $row->amount,
+                    $row->payment_method, $row->status, $row->order_number, $row->patient_name,
+                ], ',', '"', '');
+                $rowCount++;
+            });
     }
 }

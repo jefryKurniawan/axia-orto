@@ -1,1 +1,0 @@
-import{t as e}from"./react-BEjiJJzm.js";var t=e();function n({className:e=``}){return(0,t.jsx)(`div`,{className:`bg-slate-200 dark:bg-slate-700 rounded animate-pulse ${e}`})}function r({rows:e=5}){return(0,t.jsx)(`div`,{className:`space-y-3`,children:Array.from({length:e}).map((e,r)=>(0,t.jsx)(n,{className:`h-12 w-full`},r))})}export{r as n,n as t};

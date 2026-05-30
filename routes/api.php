@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ProductionController;
 use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\AuditController;
+use App\Http\Controllers\Api\BackupController;
 
 // Auth (public)
 Route::post('/login', [AuthController::class, 'login']);
@@ -120,6 +121,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/audit-logs', [AuditController::class, 'index']);
     Route::get('/audit-logs/{type}/{id}', [AuditController::class, 'forModel']);
+});
+
+// Backup & Restore (admin only)
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/backups', [BackupController::class, 'index']);
+    Route::post('/backups', [BackupController::class, 'store']);
+    Route::post('/backups/restore', [BackupController::class, 'restore']);
+    Route::get('/backups/{filename}/download', [BackupController::class, 'download']);
+    Route::delete('/backups/{filename}', [BackupController::class, 'destroy']);
 });
 
 // Health check

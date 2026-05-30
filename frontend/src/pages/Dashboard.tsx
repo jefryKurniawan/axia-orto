@@ -3,7 +3,8 @@ import { useCountUp } from '../hooks/useCountUp'
 import { Card, CardBody } from '../components/ui/Card'
 import { StatusBadge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
-import { CalendarCheck, Users, UserCheck, UserPlus, ClipboardList, AlertTriangle, Package } from 'lucide-react'
+import { RevenueTrendChart, ConsultationTrendChart, OrderStatusChart, ProductionPipelineChart } from '../components/charts/DashboardCharts'
+import { CalendarCheck, Users, UserCheck, UserPlus, ClipboardList, AlertTriangle, Package, TrendingUp, BarChart3, PieChart as PieChartIcon, Factory } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 function StatCard({ label, value, color, icon: Icon }: { label: string; value: number; color: string; icon: LucideIcon }) {
@@ -56,6 +57,11 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}><CardBody><Skeleton className="h-20" /></CardBody></Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={`chart-${i}`}><CardBody><Skeleton className="h-64" /></CardBody></Card>
           ))}
         </div>
       </div>
@@ -158,6 +164,49 @@ export default function Dashboard() {
           </CardBody>
         </Card>
       )}
+
+      {/* Analytics Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardBody>
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-5 h-5 text-green-500 dark:text-green-400" />
+              <h2 className="font-semibold text-slate-900 dark:text-slate-100">Pendapatan 30 Hari</h2>
+            </div>
+            <RevenueTrendChart data={data.revenue_trend} />
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody>
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+              <h2 className="font-semibold text-slate-900 dark:text-slate-100">Konsultasi 30 Hari</h2>
+            </div>
+            <ConsultationTrendChart data={data.consultation_trend} />
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody>
+            <div className="flex items-center gap-2 mb-4">
+              <PieChartIcon className="w-5 h-5 text-purple-500 dark:text-purple-400" />
+              <h2 className="font-semibold text-slate-900 dark:text-slate-100">Status Order</h2>
+            </div>
+            <OrderStatusChart data={data.order_status_distribution} />
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody>
+            <div className="flex items-center gap-2 mb-4">
+              <Factory className="w-5 h-5 text-orange-500 dark:text-orange-400" />
+              <h2 className="font-semibold text-slate-900 dark:text-slate-100">Pipeline Produksi</h2>
+            </div>
+            <ProductionPipelineChart data={data.production_pipeline} />
+          </CardBody>
+        </Card>
+      </div>
     </div>
   )
 }

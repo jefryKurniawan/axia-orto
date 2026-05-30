@@ -23,16 +23,9 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,svg,png,woff2}'],
         navigateFallback: null,
-        runtimeCaching: [
-          {
-            urlPattern: /^https?:\/\/.*\/api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
-            },
-          },
-        ],
+        // No runtimeCaching for /api — TanStack Query + Dexie.js handle data caching.
+        // SW caching API calls causes "no-response" errors when backend is unreachable.
+        ignoreURLParametersMatching: [/^page$/, /^search$/],
       },
     }),
   ],

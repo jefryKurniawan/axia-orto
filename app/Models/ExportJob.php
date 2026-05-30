@@ -16,6 +16,8 @@ class ExportJob extends Model
         'parameters',
         'status',
         'file_path',
+        'file_size',
+        'row_count',
         'error_message',
         'started_at',
         'completed_at',

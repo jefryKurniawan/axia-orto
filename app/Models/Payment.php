@@ -5,14 +5,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Traits\Cacheable;
 use App\Models\Traits\Auditable;
-use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
-use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
+use App\Helpers\CacheHelper;
+use Illuminate\Support\Facades\DB;
 
 class Payment extends Model
 {
-    use HasFactory, Cacheable, Auditable;
+    use HasFactory, Auditable;
 
     protected $fillable = [
         'uuid',
@@ -71,7 +70,8 @@ class Payment extends Model
     // Cache Methods
     public static function getCachedPaymentStats()
     {
-        return Cache::tags(['Payment'])->remember('payment_stats', 3600, function () {
+        $key = CacheHelper::key('payments', 'stats');
+        return CacheHelper::remember($key, 3600, function () {
             return [
                 'total_revenue' => static::completed()->sum('amount'),
                 'pending_payments' => static::pending()->count(),

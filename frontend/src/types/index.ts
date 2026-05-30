@@ -202,6 +202,10 @@ export interface DashboardStats {
   recent_consultations: Consultation[]
   low_stock_count: number
   low_stock_items: { uuid: string; name: string; code: string; quantity: number; reorder_level: number; unit: string }[]
+  revenue_trend: { date: string; total_revenue: number; total_transactions: number }[]
+  consultation_trend: { date: string; total: number; completed: number; cancelled: number }[]
+  order_status_distribution: { status: string; count: number }[]
+  production_pipeline: { step: string; status: string; count: number }[]
 }
 
 // Inventory Item

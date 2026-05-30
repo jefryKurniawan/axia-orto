@@ -5,13 +5,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Traits\Cacheable;
-use Illuminate\Support\Facades\Cache; // ✅ IMPORT INI
-use Illuminate\Support\Facades\DB; // ✅ IMPORT INI untuk raw queries
+use App\Models\Traits\Auditable;
+use App\Helpers\CacheHelper;
+use Illuminate\Support\Facades\DB;
 
 class ProductionTracking extends Model
 {
-    use HasFactory, Cacheable;
+    use HasFactory, Auditable;
 
     protected $table = 'production_trackings';
 
@@ -70,7 +70,8 @@ class ProductionTracking extends Model
     // Cache Methods
     public static function getCachedOrderProgress($orderId)
     {
-        return Cache::tags(['ProductionTracking'])->remember("order_progress.{$orderId}", 1800, function () use ($orderId) {
+        $key = CacheHelper::key('production', 'order_progress', ['order' => $orderId]);
+        return CacheHelper::remember($key, 1800, function () use ($orderId) {
             return [
                 'completed' => static::completedStages($orderId)->get(),
                 'current' => static::currentStage($orderId)->first(),
