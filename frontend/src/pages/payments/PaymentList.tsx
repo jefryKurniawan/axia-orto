@@ -53,7 +53,7 @@ export default function PaymentList() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Pembayaran</h1>
         <Button onClick={() => navigate('/payments/create')} className="w-full sm:w-auto">
-          + Catat Pembayaran
+          + Tambah Pembayaran
         </Button>
       </div>
 

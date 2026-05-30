@@ -8,6 +8,7 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import type { OrderItem } from '../../types'
+import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react'
 
 interface ServiceEntry {
   service_id: number
@@ -198,7 +199,7 @@ export default function OrderForm() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Layanan</h2>
-              <Button type="button" size="sm" variant="ghost" onClick={addService}>+ Tambah</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={addService}><Plus className="h-4 w-4 mr-1" /> Tambah</Button>
             </div>
           </CardHeader>
           <CardBody className="space-y-3">
@@ -228,7 +229,7 @@ export default function OrderForm() {
                 </div>
                 {services.length > 1 && (
                   <Button type="button" size="sm" variant="danger" onClick={() => removeService(index)}>
-                    Hapus
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -238,9 +239,9 @@ export default function OrderForm() {
         </Card>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button type="button" variant="secondary" onClick={() => navigate('/orders')}>Batal</Button>
+          <Button type="button" variant="secondary" onClick={() => navigate('/orders')}><ArrowLeft className="h-4 w-4 mr-1.5" /> Batal</Button>
           <Button type="submit" loading={loading}>
-            {isEdit ? 'Simpan Perubahan' : 'Buat Order'}
+            <Save className="h-4 w-4 mr-1.5" /> {isEdit ? 'Simpan Perubahan' : 'Buat Order'}
           </Button>
         </div>
       </form>

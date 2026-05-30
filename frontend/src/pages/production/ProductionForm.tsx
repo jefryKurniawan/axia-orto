@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { api } from '../../lib/api'
+import { Save, ArrowLeft } from 'lucide-react'
 
 interface UserOption { id: number; name: string; role: string }
 
@@ -191,9 +192,9 @@ export default function ProductionForm() {
         </Card>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button type="button" variant="secondary" onClick={() => navigate('/production')}>Batal</Button>
+          <Button type="button" variant="secondary" onClick={() => navigate('/production')}><ArrowLeft className="h-4 w-4 mr-1.5" /> Batal</Button>
           <Button type="submit" loading={loading}>
-            {isEdit ? 'Simpan Perubahan' : 'Tambah Tracking'}
+            <Save className="h-4 w-4 mr-1.5" /> {isEdit ? 'Simpan Perubahan' : 'Tambah Tracking'}
           </Button>
         </div>
       </form>

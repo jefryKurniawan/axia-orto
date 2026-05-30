@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button'
 import { StatusBadge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { useState } from 'react'
+import { Pencil, Trash2, ArrowLeft, Play, CheckCircle } from 'lucide-react'
 
 const nextStatusMap: Record<string, string> = {
   pending: 'in_progress',
@@ -59,7 +60,7 @@ export default function ProductionDetail() {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 mb-4">Gagal memuat data tracking</p>
-        <Button variant="secondary" onClick={() => navigate('/production')}>Kembali ke Daftar</Button>
+        <Button variant="secondary" onClick={() => navigate('/production')}><ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali ke Daftar</Button>
       </div>
     )
   }
@@ -88,13 +89,14 @@ export default function ProductionDetail() {
         <div className="flex gap-2 flex-shrink-0">
           {nextStatusMap[tracking.status] && (
             <Button onClick={handleAdvanceStatus} loading={updateMutation.isPending}>
+              {tracking.status === 'pending' ? <Play className="h-4 w-4 mr-1.5" /> : <CheckCircle className="h-4 w-4 mr-1.5" />}
               {nextStatusLabel[tracking.status]}
             </Button>
           )}
           {tracking.status !== 'completed' && (
-            <Button variant="secondary" onClick={() => navigate(`/production/${uuid}/edit`)}>Edit</Button>
+            <Button variant="secondary" onClick={() => navigate(`/production/${uuid}/edit`)}><Pencil className="h-4 w-4 mr-1.5" /> Edit</Button>
           )}
-          <Button variant="danger" onClick={() => setShowDelete(true)}>Hapus</Button>
+          <Button variant="danger" onClick={() => setShowDelete(true)}><Trash2 className="h-4 w-4 mr-1.5" /> Hapus</Button>
         </div>
       </div>
 
@@ -118,7 +120,7 @@ export default function ProductionDetail() {
       </Card>
 
       <div className="flex justify-start">
-        <Button variant="secondary" onClick={() => navigate('/production')}>Kembali ke Daftar</Button>
+        <Button variant="secondary" onClick={() => navigate('/production')}><ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali ke Daftar</Button>
       </div>
 
       <Modal isOpen={showDelete} onClose={() => setShowDelete(false)} title="Hapus Tracking" size="sm">

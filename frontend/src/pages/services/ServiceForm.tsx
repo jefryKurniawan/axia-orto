@@ -5,6 +5,7 @@ import { useToastStore } from '../../stores/toastStore'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { Save, ArrowLeft } from 'lucide-react'
 
 const serviceTypes = [
   { value: 'konsultasi', label: 'Konsultasi' },
@@ -217,10 +218,10 @@ export default function ServiceForm() {
 
             <div className="flex gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
               <Button type="submit" disabled={loading}>
-                {loading ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Tambah Layanan'}
+                <Save className="h-4 w-4 mr-1.5" /> {loading ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Tambah Layanan'}
               </Button>
               <Button type="button" variant="secondary" onClick={() => navigate('/services')}>
-                Batal
+                <ArrowLeft className="h-4 w-4 mr-1.5" /> Batal
               </Button>
             </div>
           </CardBody>

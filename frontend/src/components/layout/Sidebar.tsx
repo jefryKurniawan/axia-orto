@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAppStore } from '../../stores/appStore'
-import { LayoutDashboard, Users, Stethoscope, Building2, ClipboardList, CreditCard, Factory, FileBarChart, Package, ShieldCheck, X } from 'lucide-react'
+import { LayoutDashboard, Users, Stethoscope, Building2, ClipboardList, CreditCard, Factory, FileBarChart, Package, ShieldCheck, X, Bone } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 const navItems = [
@@ -69,7 +69,7 @@ export function Sidebar() {
               )}
             </>
           ) : (
-            !isMobile && <LayoutDashboard className="w-6 h-6 text-blue-600 mx-auto" />
+            !isMobile && <Bone className="w-6 h-6 text-blue-600 mx-auto" />
           )}
         </div>
 

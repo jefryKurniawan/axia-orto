@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { api } from '../../lib/api'
 import type { Consultation } from '../../types'
+import { Save, ArrowLeft } from 'lucide-react'
 
 type FormData = Partial<Consultation>
 
@@ -275,10 +276,10 @@ export default function ConsultationForm() {
 
         <div className="flex justify-end gap-2 mt-4">
           <Button type="button" variant="secondary" onClick={() => navigate('/consultations')}>
-            Batal
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Batal
           </Button>
           <Button type="submit" loading={loading}>
-            {isEdit ? 'Simpan Perubahan' : 'Tambah Konsultasi'}
+            <Save className="h-4 w-4 mr-1.5" /> {isEdit ? 'Simpan Perubahan' : 'Tambah Konsultasi'}
           </Button>
         </div>
       </form>

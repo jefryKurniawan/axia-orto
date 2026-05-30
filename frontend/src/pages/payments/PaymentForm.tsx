@@ -6,6 +6,7 @@ import { useToastStore } from '../../stores/toastStore'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { Save, ArrowLeft } from 'lucide-react'
 
 export default function PaymentForm() {
   const { uuid } = useParams<{ uuid: string }>()
@@ -111,7 +112,7 @@ export default function PaymentForm() {
           <span className="text-slate-900 dark:text-slate-100">{isEdit ? 'Edit' : 'Tambah'}</span>
         </nav>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-          {isEdit ? 'Edit Pembayaran' : 'Catat Pembayaran'}
+          {isEdit ? 'Edit Pembayaran' : 'Tambah Pembayaran'}
         </h1>
       </div>
 
@@ -195,8 +196,8 @@ export default function PaymentForm() {
         </Card>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button type="button" variant="secondary" onClick={() => navigate('/payments')}>Batal</Button>
-          <Button type="submit" loading={loading}>Simpan</Button>
+          <Button type="button" variant="secondary" onClick={() => navigate('/payments')}><ArrowLeft className="h-4 w-4 mr-1.5" /> Batal</Button>
+          <Button type="submit" loading={loading}><Save className="h-4 w-4 mr-1.5" /> Simpan</Button>
         </div>
       </form>
     </div>

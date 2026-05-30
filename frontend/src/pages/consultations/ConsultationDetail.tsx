@@ -6,6 +6,7 @@ import { StatusBadge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { useToastStore } from '../../stores/toastStore'
 import { useState } from 'react'
+import { Pencil, Trash2, ArrowLeft } from 'lucide-react'
 
 export default function ConsultationDetail() {
   const { uuid } = useParams<{ uuid: string }>()
@@ -38,7 +39,7 @@ export default function ConsultationDetail() {
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 mb-4">Gagal memuat data konsultasi</p>
         <Button variant="secondary" onClick={() => navigate('/consultations')}>
-          Kembali ke Daftar Konsultasi
+          <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali ke Daftar Konsultasi
         </Button>
       </div>
     )
@@ -70,10 +71,10 @@ export default function ConsultationDetail() {
         <div className="flex gap-2 items-center flex-shrink-0 flex-wrap">
           <StatusBadge status={consultation.status} />
           <Button variant="secondary" onClick={() => navigate(`/consultations/${uuid}/edit`)} className="flex-1 sm:flex-none">
-            Edit
+            <Pencil className="h-4 w-4 mr-1.5" /> Edit
           </Button>
           <Button variant="danger" onClick={() => setShowDelete(true)} className="flex-1 sm:flex-none">
-            Hapus
+            <Trash2 className="h-4 w-4 mr-1.5" /> Hapus
           </Button>
         </div>
       </div>

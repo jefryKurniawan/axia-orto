@@ -6,6 +6,7 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import type { Patient } from '../../types'
+import { Save, ArrowLeft } from 'lucide-react'
 
 type FormData = Partial<Patient>
 
@@ -225,10 +226,10 @@ export default function PatientForm() {
 
         <div className="flex justify-end gap-2 mt-4">
           <Button type="button" variant="secondary" onClick={() => navigate('/patients')}>
-            Batal
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Batal
           </Button>
           <Button type="submit" loading={loading}>
-            {isEdit ? 'Simpan Perubahan' : 'Tambah Pasien'}
+            <Save className="h-4 w-4 mr-1.5" /> {isEdit ? 'Simpan Perubahan' : 'Tambah Pasien'}
           </Button>
         </div>
       </form>

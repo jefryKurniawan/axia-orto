@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { useState } from 'react'
+import { Pencil, Trash2, ArrowLeft } from 'lucide-react'
 
 export default function PatientDetail() {
   const { uuid } = useParams<{ uuid: string }>()
@@ -33,7 +34,7 @@ export default function PatientDetail() {
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 mb-4">Gagal memuat data pasien</p>
         <Button variant="secondary" onClick={() => navigate('/patients')}>
-          Kembali ke Daftar Pasien
+          <ArrowLeft className="h-4 w-4 mr-1.5" /> Kembali ke Daftar Pasien
         </Button>
       </div>
     )
@@ -64,10 +65,10 @@ export default function PatientDetail() {
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <Button variant="secondary" onClick={() => navigate(`/patients/${uuid}/edit`)} className="flex-1 sm:flex-none">
-            Edit
+            <Pencil className="h-4 w-4 mr-1.5" /> Edit
           </Button>
           <Button variant="danger" onClick={() => setShowDelete(true)} className="flex-1 sm:flex-none">
-            Hapus
+            <Trash2 className="h-4 w-4 mr-1.5" /> Hapus
           </Button>
         </div>
       </div>
