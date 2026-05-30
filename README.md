@@ -38,6 +38,44 @@ Dibangun dengan arsitektur **React SPA + Laravel API** yang ringan dan cepat, bi
 - **Mode Gelap** — Tampilan terang/gelap, tersimpan otomatis
 - **Responsif** — Bisa digunakan di HP, tablet, dan laptop
 
+## Screenshots
+
+### Landing Page
+![Landing Page](./review/beranda.png)
+
+### Login
+![Login](./review/login.png)
+
+### Dashboard
+![Dashboard](./review/dashboard.png)
+
+### Manajemen Pasien
+![Pasien](./review/pasien.png)
+
+### Konsultasi
+![Konsultasi](./review/konsultasi.png)
+
+### Katalog Layanan
+![Layanan](./review/layanan.png)
+
+### Order Perawatan
+![Order](./review/order.png)
+
+### Pembayaran
+![Pembayaran](./review/pembayaran.png)
+
+### Tracking Produksi
+![Produksi](./review/produksi.png)
+
+### Inventaris
+![Inventaris](./review/inventory.png)
+
+### Laporan
+![Laporan](./review/laporan.png)
+
+### Audit Log
+![Audit Log](./review/alog.png)
+
 ## Review & Status Pengembangan
 
 ### Skor Produksi: 7/10 — Siap produksi dengan beberapa perbaikan yang perlu dilakukan
