@@ -152,7 +152,7 @@ export default function ReportsPage() {
         <CardBody>
           {exportsLoading ? (
             <TableSkeleton rows={3} columns={4} />
-          ) : !exportsData?.data.length ? (
+          ) : !exportsData?.data?.length ? (
             <div className="flex flex-col items-center py-12 gap-3">
               <FileSpreadsheet className="w-10 h-10 text-slate-300 dark:text-slate-600" />
               <p className="text-sm text-slate-500 dark:text-slate-400">Belum ada export</p>
@@ -171,7 +171,7 @@ export default function ReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {exportsData.data.map((job, i) => (
+                    {exportsData?.data?.map((job, i) => (
                       <tr key={job.uuid} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors animate-row-enter" style={{ animationDelay: `${i * 30}ms` }}>
                         <td className="py-3.5 px-4 font-medium text-slate-900 dark:text-slate-100">
                           {reportTypes.find((r) => r.type === job.report_type)?.title ?? job.report_type}
@@ -208,7 +208,7 @@ export default function ReportsPage() {
 
               {/* Mobile cards */}
               <div className="block sm:hidden space-y-2">
-                {exportsData.data.map((job) => (
+                {exportsData?.data?.map((job) => (
                   <div key={job.uuid} className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-2 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -236,7 +236,7 @@ export default function ReportsPage() {
               </div>
 
               {/* Pagination */}
-              {exportsData.meta.last_page > 1 && (
+              {exportsData?.meta && exportsData.meta.last_page > 1 && (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <p className="text-xs text-slate-400 dark:text-slate-500 text-center sm:text-left">
                     Halaman {exportsData.meta.current_page} dari {exportsData.meta.last_page}

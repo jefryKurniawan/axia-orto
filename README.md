@@ -1,124 +1,201 @@
-# 🦿 Axia Orto Clinic ERP
+# Axia Orto Clinic ERP
 
-> Modern Clinic Management System for Orthotic & Prosthetic Workflows.
+> Sistem Manajemen Klinik Ortotik & Prostetik — React SPA + Laravel API
 
-## 💡 Tentang Project Ini
+## Tentang Project
 
-**Axia Orto** adalah sistem manajemen klinik berbasis web yang dirancang khusus untuk menangani workflow spesifik di klinik **Ortotik dan Prostetik**.
+**Axia Orto** adalah sistem manajemen klinik berbasis web yang dirancang khusus untuk menangani alur kerja di klinik **Ortotik dan Prostetik**.
 
-Project ini dibuat untuk menjawab kebutuhan klinis yang butuh transisi dari pencatatan manual/paper-based menuju ekosistem digital yang terintegrasi. Fokus utamanya adalah **efisiensi operasional**: mulai dari pendaftaran pasien, konsultasi & anamnesis dokter, pembuatan SPK (Surat Perintah Kerja) untuk alat custom, hingga tracking stok material dan manajemen pembayaran.
+Dibangun dengan arsitektur **React SPA + Laravel API** yang ringan dan cepat, bisa berjalan di shared hosting murah tanpa Docker, Redis, atau server khusus. Backend hanya mengembalikan JSON, frontend adalah aplikasi React yang di-build menjadi file statis.
 
-Developed with an **MVP-first mindset**: fitur core di-launch dulu biar value-nya langsung kerasa, arsitektur tetap scalable, dan UI/UX di-polish secara bertahap.
+## Tech Stack
 
-## 🛠️ Tech Stack & Architecture
+| Lapisan | Teknologi | Keterangan |
+|---|---|---|
+| Backend | Laravel 10 (API-only) | Hanya JSON response, tanpa Blade views |
+| Frontend | React 19 + TypeScript + Tailwind CSS v4 | SPA, Vite 8 build ke `public/app/` |
+| Database | MySQL 8.0 | InnoDB, composite index, summary tables |
+| Autentikasi | Laravel Sanctum | Cookie-based SPA auth |
+| Data Fetching | TanStack Query | Loading, caching, sync, retry |
+| State Management | Zustand + React Context | UI state (Zustand), auth state (Context) |
+| Routing | React Router v7 | Lazy loading setiap halaman |
+| Offline | Dexie.js (IndexedDB) | Batch sync saat online |
+| Ikon | lucide-react | Ikon ringan, tree-shakeable |
 
-Stack yang dipilih balance antara performa tinggi, maintainability, dan developer experience modern:
+## Fitur Utama
 
-- **Core Framework:** `Laravel 10.10` (PHP 8.1+) — Robust MVC structure & Eloquent ORM.
-- **Interactive Frontend:** `Livewire 3` + `Alpine.js` — Real-time reactivity tanpa perlu setup heavy SPA.
-- **Database:** `PostgreSQL` — Relational integrity, JSONB support for device specs, dan high concurrency.
-- **Performance Layer:** `Laravel Octane` + `Redis` — Super fast boot time, optimized session handling, & caching strategy.
-- **Authentication:** `Laravel Breeze` — Secure auth scaffolding yang clean.
-- **Styling:** `Tailwind CSS` — Utility-first framework untuk UI yang responsif & konsisten.
-- **DevOps/CI-CD:** `GitHub Actions` — Automated testing & deployment pipeline structure.
+- **Dashboard** — Ringkasan harian: konsultasi, pasien, pendapatan, stok rendah, grafik tren
+- **Manajemen Pasien** — CRUD pasien, rekam medis, import CSV, data asuransi
+- **Konsultasi** — Jadwal, anamnesis, diagnosis, rencana perawatan, kontrol ulang
+- **Katalog Layanan** — Daftar layanan ortotik/prostetik dengan harga dan durasi
+- **Order Perawatan** — Surat perintah kerja, item breakdown, estimasi pengiriman
+- **Pembayaran** — Pencatatan pembayaran, metode bayar, catatan transaksi
+- **Tracking Produksi** — Tahapan produksi, penugasan teknisi, catatan pengerjaan
+- **Inventaris** — Manajemen stok material, peringatan stok rendah, kategori
+- **Laporan** — Export CSV: pendapatan, pasien, order, pembayaran
+- **Audit Log** — Jejak perubahan data oleh semua pengguna (admin only)
+- **Multi-Role** — Admin, Dokter, Staf Klinik, Teknisi — masing-masing hak akses berbeda
+- **Mode Gelap** — Tampilan terang/gelap, tersimpan otomatis
+- **Responsif** — Bisa digunakan di HP, tablet, dan laptop
 
-## 📸 Screenshots & Demo
+## Review & Status Pengembangan
 
-### 🔐 Login Page
+### Skor Produksi: 7/10 — Siap produksi dengan beberapa perbaikan yang perlu dilakukan
 
-Halaman autentikasi dengan desain modern dan secure.
-![Login Axia Orto](./screenshot/Login-AxiaOrto-ERP.png)
+### Temuan Backend
 
-### 📊 Dashboard
+**Kritis (harus diperbaiki sebelum produksi):**
+1. **SyncController tanpa validasi dan pengecekan peran** — Endpoint `/api/sync/batch` menerima data mentah tanpa validasi dan tanpa pengecekan role. Semua pengguna yang sudah login (termasuk teknisi) bisa membuat/mengubah/menghapus pasien dan konsultasi melalui endpoint ini, melewati seluruh matrix izin.
+2. **BackupController `restore()` tanpa sanitasi path** — Parameter `filename` tidak menggunakan `basename()` dan tidak mengecek ekstensi `.sql.gz`, berbeda dengan `download()` dan `destroy()` yang sudah benar.
 
-Dashboard overview dengan ringkasan data harian, statistik pasien, dan quick actions.
-![Dashboard](./screenshot/Laravel-Dashboard.png)
+**Sedang:**
+3. **InventoryController tidak memperbarui cache** — `store()`, `update()`, `destroy()`, dan `adjustStock()` tidak memanggil `CacheHelper::bumpVersion('inventory')`, sehingga data kadaluarsa akan disajikan sampai TTL 300 detik habis.
+4. **CORS terlalu longgar** — `allowed_methods: ['*']` dan `allowed_headers: ['*']` di `config/cors.php` seharusnya dibatasi ke metode dan header yang benar-benar dipakai.
+5. **BackupController membocorkan password** — Saat `.my.cnf` tidak tersedia, password MySQL dikirim via argumen CLI (`-p`), terlihat oleh pengguna lain di shared hosting melalui `ps aux`.
+6. **RoleMiddleware mengembalikan redirect** — Menggunakan `redirect()->route('login')` yang menghasilkan HTTP 302, seharusnya mengembalikan JSON 401 untuk konsistensi API.
+7. **AuditController tidak memvalidasi parameter `type`** — Input pengguna langsung dipakai di query jika tidak ada di map, berpotensi menjadi vektor injeksi.
 
-### 👥 Manajemen Pasien
+**Ringan:**
+8. **Tidak ada logging percobaan login gagal** — Tidak ada mekanisme lockout akun atau pencatatan upaya login yang gagal.
+9. **`config/permissions.php` tidak pernah dipakai** — Matrix izin didefinisikan tapi tidak direferensikan oleh controller atau middleware manapun. Semua pengecekan role dilakukan inline.
+10. **Form Request tidak konsisten** — Beberapa endpoint menggunakan `$request->validate()` inline alih-alih FormRequest class, berisiko menyebabkan aturan validasi berbeda antara create dan update.
+11. **`.env.example` memiliki `APP_DEBUG=true`** — Deploy produksi yang menyalin file ini akan menampilkan debug mode, membocorkan stack trace dan variabel lingkungan.
 
-CRUD pasien dengan medical record number, data asuransi, dan riwayat alergi yang terstruktur.
-![Manajemen Pasien](./screenshot/Laravel-Manajemen-Pasien.png)
+**Positif:**
+- Semua route API dilindungi `auth:sanctum` kecuali login dan health check
+- Semua query menggunakan parameterized queries (tidak ada SQL injection)
+- Perintah shell menggunakan `escapeshellarg()` pada semua argumen
+- CSRF handling benar untuk SPA auth
+- Dependensi minimal, tidak ada paket yang tidak perlu
+- Export job di-scope ke pengguna yang meminta
 
-### 🩺 Manajemen Konsultasi
+### Temuan Frontend
 
-Penjadwalan konsultasi, anamnesis, diagnosis, dan treatment planning dengan status tracking.
-![Manajemen Konsultasi](./screenshot/Laravel-Manajemen-Konsultasi.png)
+**Kritis:**
+1. **Tidak ada fokus trap di Modal** — Pengguna keyboard bisa berinteraksi dengan konten di belakang modal. Pelanggaran aksesibilitas.
+2. **Tidak ada pengecekan role di routing** — Semua pengguna yang sudah login bisa mengakses semua route di client. Backend tetap menolak akses, tapi UX buruk (pengguna melihat halaman, lalu dapat error API).
 
-### 💰 Layanan & Harga
+**Sedang:**
+3. **Dark class di-toggle di 3 tempat** — Logika mode gelap ada di `appStore.ts`, `useTheme.ts`, dan `App.tsx`. Fragil, seharusnya satu sumber kebenaran.
+4. **`useImportPatients` melewati `api` client** — Menggunakan `fetch` langsung, melewatkan error handling terpusat dan melempar objek mentah alih-alih `Error`.
+5. **Auth failure yang diam** — Semua error dari `/me` diperlakukan sebagai "belum login", termasuk error server 500.
+6. **Logout tanpa penanganan error** — Jika API gagal, status `loggingOut` terjebak selamanya.
 
-Katalog layanan ortotik & prostetik dengan manajemen harga dan durasi treatment.
-![Layanan & Harga](./screenshot/Laravel-Layanan-Harga.png)
+**Ringan:**
+7. **Tidak ada timeout API** — Request yang menggantung membuat UI tetap dalam status loading tanpa batas.
+8. **`recharts` tidak di-split** — Library grafik (~200KB) masuk ke bundle utama, seharusnya di-chunk terpisah.
+9. **`key={useLocation().pathname}`** di AppLayout memaksa remount penuh pada setiap perpindahan halaman, menghancurkan state lokal komponen.
+10. **Toast auto-dismiss tidak cleanup** — Timeout tetap berjalan meskipun komponen sudah unmount.
 
-### 🏥 Klinik Ortotik-Prostetik
+### Kesimpulan
 
-Overview sistem manajemen klinik yang terintegrasi.
-![Axia Orto Klinik](./screenshot/Axia-Orto-Klinik-Ortotik-Prostetik.png)
+Arsitektur dan pola kode secara keseluruhan solid untuk shared hosting. Temuan kritis terutama di SyncController dan aksesibilitas Modal perlu diperbaiki sebelum deploy produksi. Temuan sedang (cache inventory, CORS, konsistensi validasi) sebaiknya diperbaiki dalam sprint berikutnya.
 
-## 🎯 MVP Progress & Module Flow
+## Arsitektur
 
-Pengembangan dilakukan secara modular. Berikut status pengerjaan saat ini:
+```
+Browser → static files (React SPA) → Apache
+  │
+  │ API calls: /api/*
+  ▼
+Laravel API → MySQL Database
+```
 
-| Module                 | Features / Flow                                                      | Status         |
-| :--------------------- | :------------------------------------------------------------------- | :------------- |
-| 🔐 **Auth & Roles**    | Multi-role access (Admin, Dokter, Staf), secure login flow           | ✅ Completed   |
-| 👥 **Patient Mgmt**    | CRUD Pasien, Medical Record (MRN), Insurance data, Allergies history | ✅ Completed   |
-| 🩺 **Consultation**    | Scheduling, Anamnesis, Diagnosis, Treatment Planning                 | ✅ Completed   |
-| 📦 **Treatment Order** | SPK Creation, Item breakdown (Ortosis/Protesis), Delivery estimation | ✅ Completed   |
-| 📊 **Inventory**       | Material tracking, Stock alerts, Price management                    | ✅ Completed   |
-| 💳 **Payments**        | Billing generation, Payment tracking, Invoicing                      | 🔄 In Progress |
-| 📉 **Reports**         | Analytics dashboard, PDF Export, Financial summary                   | 🔄 In Progress |
+- React SPA dimuat dari `/app/index.html`
+- Semua permintaan data melalui REST API yang dilindungi Sanctum
+- Backend tidak merender HTML — hanya JSON API
+- `public/app/.htaccess` menangani routing SPA di shared hosting
 
-**Highlights:**
-
-- Core CRUD sudah berjalan lancar dengan **Route Model Binding** yang proper.
-- **Livewire components** sudah di-refactor untuk interaksi yang smooth tapi tetap ringan di browser.
-- **Database Schema** sudah normalized & menggunakan `Soft Deletes` untuk data safety.
-- **Error Handling** & Null-safe operators sudah diimplementasi untuk mencegah crash di view layer.
-
-## 💼 Fullstack Skills Demonstrated
-
-Project ini bukan sekadar CRUD standar, tapi showcase kemampuan End-to-End development:
-
-1.  **Backend Architecture:** Memahami struktur Laravel yang scalable, proper routing, service layer, & complex Model Relationships.
-2.  **Reactive UI Development:** Mengimplementasikan `Livewire 3` untuk fitur dinamis (seperti real-time calculation & dynamic forms) tanpa overhead JavaScript yang berat.
-3.  **Database Optimization:** Design schema PostgreSQL yang efisien, penggunaan Eager Loading untuk prevent N+1 query problem.
-4.  **Performance Tuning:** Integrasi `Octane` & `Redis` untuk menangani session & caching query berat agar aplikasi tetap ngebut.
-5.  **Clean Code & DX:** Menggunakan `Laravel Pint` untuk formatting, `IDE Helper` untuk autocompletion, dan validasi data yang ketat.
-6.  **CI/CD Awareness:** Memahami pipeline struktur untuk auto-testing dan safe deployment workflow.
-
-## 📦 Installation & Setup
-
-Berikut cara untuk menjalankan project ini di local environment:
+## Instalasi
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/jefrykurniawan/axia-orto.git
 cd axia-orto
 
-# 2. Install dependencies
+# 2. Install dependencies backend
 composer install
-npm install && npm run build
 
-# 3. Environment setup
+# 3. Install dependencies frontend
+cd frontend
+npm install
+npm run build
+cd ..
+
+# 4. Setup environment
 cp .env.example .env
 php artisan key:generate
 
-# 4. Database migration & seed (dummy data)
+# 5. Konfigurasi database di .env
+# DB_DATABASE=axiadb
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# 6. Jalankan migrasi dan data awal
 php artisan migrate --seed
 
-# 5. Jalankan server (Standard or Octane)
+# 7. Jalankan server
 php artisan serve
-# atau untuk performa tinggi
-php artisan octane:start
 
-# Akses di browser: http://127.0.0.1:8000
+# Buka browser: http://localhost:8000/app/
 ```
 
-## 🤝 Contribution
+## Struktur Project
 
-Project ini masih dalam tahap pengembangan aktif. Feedback, bug reports, atau saran fitur baru sangat diapresiasi! Feel free to open an Issue atau Pull Request.
+```
+axia-orto/
+├── frontend/                # React SPA
+│   └── src/
+│       ├── pages/           # Halaman-halaman aplikasi
+│       ├── components/      # Komponen UI (Button, Card, Table, dll)
+│       ├── hooks/           # TanStack Query hooks
+│       ├── contexts/        # Auth context
+│       ├── stores/          # Zustand stores
+│       ├── lib/             # API client, utils
+│       └── types/           # TypeScript interfaces
+├── app/                     # Laravel API
+│   ├── Http/Controllers/    # API controllers (JSON only)
+│   ├── Models/              # Eloquent models
+│   └── Observers/           # Audit trail, summary update
+├── config/permissions.php   # Hak akses per role
+├── routes/api.php           # Semua API routes
+├── routes/web.php           # SPA catch-all (inject CSRF)
+└── public/app/              # React build output
+```
+
+## Hak Akses
+
+| Modul | Admin | Dokter | Staf Klinik | Teknisi |
+|---|---|---|---|---|
+| Pasien | Semua | Lihat | Semua | - |
+| Konsultasi | Lihat, Hapus | Semua | Lihat | - |
+| Layanan | Semua | Lihat | Lihat | - |
+| Order | Semua | Buat, Lihat | Buat, Lihat, Edit | Lihat |
+| Pembayaran | Semua | - | Semua | - |
+| Produksi | Lihat | Lihat | Lihat | Lihat, Edit |
+| Inventaris | Semua | Lihat | Tambah, Lihat | Lihat |
+| Laporan | Lihat | Lihat | Lihat | - |
+| Audit Log | Lihat | - | - | - |
+
+## Deployment (Shared Hosting)
+
+```bash
+git pull origin main
+composer install --no-dev --optimize-autoloader
+cd frontend && npm ci && npm run build && cd ..
+php artisan config:cache
+php artisan route:cache
+php artisan migrate --force
+```
+
+## Panduan Pengguna
+
+Lihat [Panduan-Pengguna.md](./Panduan-Pengguna.md) untuk panduan lengkap penggunaan sistem bagi owner dan admin klinik.
+
+## License
+
+MIT | Laravel 10 + React 19 + MySQL
 
 ---
 
-Dibuat dengan ❤️ & ☕ oleh **Jefry Kurniawan**  
-_License: MIT | Laravel 10 • Livewire 3 • PostgreSQL_
+Dibuat oleh **Jefry Kurniawan**

@@ -15,7 +15,6 @@ storage/framework/views/*
 *.log
 frankenphp
 CLAUDE.md
-docs/
 .openclaude/
 frontend/node_modules
 public/build
