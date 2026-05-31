@@ -79,7 +79,8 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => (
+          {/* Core */}
+          {navItems.slice(0, 4).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -96,7 +97,6 @@ export function Sidebar() {
             >
               {({ isActive }) => (
                 <>
-                  {/* Active indicator — left border */}
                   {isActive && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-blue-600 dark:bg-blue-400" />
                   )}
@@ -110,6 +110,46 @@ export function Sidebar() {
               )}
             </NavLink>
           ))}
+
+          {/* Divider */}
+          <div className="my-2 mx-3 border-t border-slate-100 dark:border-slate-800" />
+
+          {/* Operations */}
+          {navItems.slice(4).map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={handleNavClick}
+              className={({ isActive }) =>
+                `group flex items-center gap-3 rounded-lg transition-all duration-150 relative ${
+                  sidebarOpen ? 'px-3 py-2' : 'justify-center py-2.5'
+                } ${
+                  isActive
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-100'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-blue-600 dark:bg-blue-400" />
+                  )}
+                  <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                  {sidebarOpen && (
+                    <span className={`text-sm whitespace-nowrap ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                      {item.label}
+                    </span>
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+
+          {/* Admin divider */}
+          {user?.role === 'admin' && (
+            <div className="my-2 mx-3 border-t border-slate-100 dark:border-slate-800" />
+          )}
 
           {/* Audit Log — admin only */}
           {user?.role === 'admin' && (

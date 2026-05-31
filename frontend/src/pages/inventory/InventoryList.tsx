@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { Pagination } from '../../components/ui/Pagination'
 
 const categoryOptions = [
   { value: '', label: 'Semua Kategori' },
@@ -48,63 +49,16 @@ export default function InventoryList() {
     })
   }
 
-  const renderPagination = () => {
-    if (!data?.meta || data.meta.last_page <= 1) return null
-    const { current_page, last_page, total } = data.meta
-    const start = (current_page - 1) * data.meta.per_page + 1
-    const end = Math.min(current_page * data.meta.per_page, total)
-
-    return (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-        <p className="text-xs text-slate-400 dark:text-slate-500 text-center sm:text-left">
-          Menampilkan {start}-{end} dari {total} item
-        </p>
-        <div className="flex items-center justify-center gap-1">
-          <Button size="sm" variant="ghost" disabled={current_page <= 1} onClick={() => setPage((p) => p - 1)}>
-            &laquo;
-          </Button>
-          {Array.from({ length: Math.min(last_page, 5) }, (_, i) => {
-            const p = i + 1
-            return (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
-                  p === current_page
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                {p}
-              </button>
-            )
-          })}
-          {last_page > 5 && <span className="text-xs text-slate-400 px-1">...</span>}
-          {last_page > 5 && (
-            <button
-              onClick={() => setPage(last_page)}
-              className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
-                last_page === current_page
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              {last_page}
-            </button>
-          )}
-          <Button size="sm" variant="ghost" disabled={current_page >= last_page} onClick={() => setPage((p) => p + 1)}>
-            &raquo;
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Inventory</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white animate-title-enter">
+          Inventory
+          {data?.meta?.total != null && (
+            <span className="ml-2 text-sm font-normal text-slate-400 dark:text-slate-500">{data.meta.total}</span>
+          )}
+        </h1>
         <Button onClick={() => navigate('/inventory/create')} className="w-full sm:w-auto">
           + Tambah Item
         </Button>
@@ -182,15 +136,13 @@ export default function InventoryList() {
               <p className="text-sm text-red-600 dark:text-red-400">Gagal memuat data</p>
             </div>
           ) : !data?.data.length ? (
-            <div className="flex flex-col items-center py-12 gap-3">
-              <Package className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+            <div className="flex flex-col items-center py-12 gap-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+              <Package className="w-8 h-8 text-slate-300 dark:text-slate-600" />
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {search || categoryFilter ? 'Tidak ada item ditemukan' : 'Belum ada item inventory'}
+                {search || categoryFilter ? 'Tidak ada item ditemukan' : 'Inventaris masih kosong'}
               </p>
               {!search && !categoryFilter && (
-                <Button size="sm" onClick={() => navigate('/inventory/create')}>
-                  + Tambah Item
-                </Button>
+                <Button size="sm" onClick={() => navigate('/inventory/create')}>+ Tambah Item</Button>
               )}
             </div>
           ) : (
@@ -304,7 +256,16 @@ export default function InventoryList() {
                 ))}
               </div>
 
-              {renderPagination()}
+              {data?.meta && (
+                <Pagination
+                  currentPage={data.meta.current_page}
+                  lastPage={data.meta.last_page}
+                  total={data.meta.total}
+                  perPage={data.meta.per_page}
+                  entityLabel="item"
+                  onPageChange={setPage}
+                />
+              )}
             </>
           )}
         </CardBody>

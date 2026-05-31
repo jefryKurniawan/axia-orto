@@ -11,7 +11,6 @@ import {
   Clock,
   ChevronDown,
   MessageCircle,
-  Shield,
   Sun,
   Moon,
 } from 'lucide-react'
@@ -192,26 +191,26 @@ export default function LandingPage() {
         </header>
 
         {/* ── Hero ────────────────────────────────────────── */}
-        <section className="max-w-5xl mx-auto px-5 pt-20 pb-16 md:pt-28 md:pb-20">
-          <div className="max-w-xl">
-            <p className="rise ui text-[0.7rem] font-semibold text-blue-600 tracking-[0.15em] uppercase mb-4">
+        <section className="max-w-5xl mx-auto px-5 pt-16 pb-20 md:pt-24 md:pb-28">
+          <div className="max-w-3xl">
+            <p className="rise ui text-[0.7rem] font-semibold text-blue-600 tracking-[0.15em] uppercase mb-5">
               Klinik Ortotik & Prostetik &middot; Magetan
             </p>
-            <h1 className="rise rise-d1 text-[2.25rem] sm:text-[2.75rem] font-bold leading-[1.15] tracking-tight mb-4 ui">
-              Bergerak Lebih Baik,<br />
-              Hidup Lebih Penuh
+            <h1 className="rise rise-d1 text-[2.5rem] sm:text-[3.5rem] md:text-[4rem] font-bold leading-[1.05] tracking-tight mb-6 ui">
+              Bergerak Lebih Baik,{' '}
+              <span className="text-slate-400 dark:text-slate-500">Hidup Lebih Penuh</span>
             </h1>
-            <p className="rise rise-d2 text-[1.05rem] text-slate-500 dark:text-slate-400 leading-relaxed mb-8 max-w-md">
+            <p className="rise rise-d2 text-lg sm:text-xl text-slate-500 dark:text-slate-400 leading-relaxed mb-10 max-w-lg">
               Ortesis dan prostesis berkualitas tinggi. Konsultasi gratis, harga terjangkau, ditangani tenaga ahli berpengalaman.
             </p>
-            <div className="rise rise-d3 flex items-center gap-3">
+            <div className="rise rise-d3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
               <a href={waLink} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors active:scale-[0.97] ui">
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-[0.97] ui">
                 <MessageCircle className="w-4 h-4" />
                 Konsultasi Gratis
               </a>
-              <a href="#layanan" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors ui">
-                Lihat Layanan &darr;
+              <a href="#layanan" className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors ui flex items-center gap-1.5">
+                Lihat Layanan <span>&rarr;</span>
               </a>
             </div>
           </div>
@@ -219,18 +218,16 @@ export default function LandingPage() {
 
         {/* ── Trust ───────────────────────────────────────── */}
         <section className="border-y border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/30">
-          <div className="max-w-5xl mx-auto px-5 py-4 flex flex-wrap justify-center gap-x-10 gap-y-2 text-[0.8rem] text-slate-500 dark:text-slate-400 ui">
-            {[
-              { icon: Shield, t: 'Garansi 6 Bulan' },
-              { icon: Stethoscope, t: 'Konsultasi Gratis' },
-              { icon: HeartPulse, t: 'Tim Berpengalaman' },
-              { icon: Clock, t: 'Buka Setiap Hari' },
-            ].map((b, i) => (
-              <span key={i} className="flex items-center gap-1.5">
-                <b.icon className="w-3.5 h-3.5 text-blue-600" />
-                {b.t}
-              </span>
-            ))}
+          <div className="max-w-5xl mx-auto px-5 py-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[0.8rem] text-slate-500 dark:text-slate-400 ui">
+            <span className="font-semibold text-slate-700 dark:text-slate-300">Axia Orto</span>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-600">/</span>
+            <span>Garansi 6 Bulan</span>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-600">/</span>
+            <span>Konsultasi Gratis</span>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-600">/</span>
+            <span>Tim Berpengalaman</span>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-600">/</span>
+            <span>Buka Setiap Hari</span>
           </div>
         </section>
 
@@ -245,10 +242,12 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {services.map((s, i) => (
               <Reveal key={s.title} delay={i * 60}>
-                <article className="svc group h-full p-5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/50">
-                  <s.icon className="w-8 h-8 text-blue-600 mb-4" strokeWidth={1.5} />
-                  <h3 className="text-[0.95rem] font-bold mb-1.5 ui">{s.title}</h3>
-                  <p className="text-[0.82rem] text-slate-500 dark:text-slate-400 leading-relaxed">{s.desc}</p>
+                <article className={`svc group h-full p-5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/50 ${
+                  i === 0 ? 'sm:col-span-2 lg:col-span-2 sm:row-span-2' : ''
+                }`}>
+                  <s.icon className={`${i === 0 ? 'w-10 h-10' : 'w-8 h-8'} text-blue-600 mb-4`} strokeWidth={1.5} />
+                  <h3 className={`${i === 0 ? 'text-xl' : 'text-[0.95rem]'} font-bold mb-1.5 ui`}>{s.title}</h3>
+                  <p className={`${i === 0 ? 'text-[0.9rem]' : 'text-[0.82rem]'} text-slate-500 dark:text-slate-400 leading-relaxed`}>{s.desc}</p>
                 </article>
               </Reveal>
             ))}
@@ -276,8 +275,17 @@ export default function LandingPage() {
                   </thead>
                   <tbody>
                     {pricing.map((p, i) => (
-                      <tr key={i} className="pr border-t border-slate-100/80 dark:border-slate-800/50 transition-colors hover:bg-blue-50/30 dark:hover:bg-blue-900/10">
-                        <td className="py-3 px-4 font-medium transition-colors">{p.item}</td>
+                      <tr key={i} className={`pr border-t transition-colors ${
+                        p.free
+                          ? 'border-blue-200 dark:border-blue-800/40 bg-blue-50/30 dark:bg-blue-900/5'
+                          : 'border-slate-100/80 dark:border-slate-800/50 hover:bg-blue-50/30 dark:hover:bg-blue-900/10'
+                      }`}>
+                        <td className="py-3 px-4 font-medium transition-colors">
+                          {p.item}
+                          {p.free && (
+                            <span className="ml-2 text-[0.65rem] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Populer</span>
+                          )}
+                        </td>
                         <td className={`py-3 px-4 font-semibold ${p.free ? 'text-green-600 dark:text-green-400' : 'text-slate-700 dark:text-slate-300'}`}>{p.range}</td>
                         <td className="py-3 px-4 text-slate-400 dark:text-slate-500 hidden sm:table-cell">{p.note}</td>
                       </tr>

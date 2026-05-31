@@ -7,42 +7,9 @@ import { Button } from '../components/ui/Button'
 import { StatSkeleton } from '../components/ui/Skeleton'
 import { RevenueTrendChart, ConsultationTrendChart, OrderStatusChart, ProductionPipelineChart } from '../components/charts/DashboardCharts'
 import {
-  CalendarCheck, Users, UserCheck, UserPlus, AlertTriangle,
-  ClipboardList, Package, TrendingUp, BarChart3,
-  PieChart as PieChartIcon, Factory, Plus, ArrowRight,
-  CircleDot,
+  AlertTriangle, Plus, ArrowRight, CircleDot, Package,
 } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-
-interface StatCardProps {
-  label: string
-  value: number
-  icon: LucideIcon
-  accentColor: string
-  iconColor: string
-  subtitle?: string
-}
-
-function StatCard({ label, value, icon: Icon, accentColor, iconColor, subtitle }: StatCardProps) {
-  const displayValue = useCountUp(value)
-
-  return (
-    <Card accent="left" accentColor={accentColor} hover>
-      <CardBody compact>
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">{label}</p>
-            <p className={`text-3xl font-bold tracking-tight tabular-nums text-slate-900 dark:text-white`}>{displayValue}</p>
-            {subtitle && (
-              <p className="text-xs text-slate-400 dark:text-slate-500">{subtitle}</p>
-            )}
-          </div>
-          <Icon className={`w-5 h-5 ${iconColor} flex-shrink-0 mt-0.5`} />
-        </div>
-      </CardBody>
-    </Card>
-  )
-}
+import type { DashboardStats } from '../types'
 
 function ConsultationStatusBar({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
   const displayValue = useCountUp(value, 800)
@@ -65,19 +32,21 @@ function ConsultationStatusBar({ label, value, total, color }: { label: string; 
 }
 
 export default function Dashboard() {
-  const navigate = useNavigate()
   const { data, isLoading, error } = useDashboard()
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-          {Array.from({ length: 5 }).map((_, i) => <StatSkeleton key={i} />)}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Card><CardBody><div className="h-40 animate-shimmer rounded-lg" /></CardBody></Card>
+          <div className="lg:col-span-2 grid grid-cols-2 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)}
+          </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+          <Card className="lg:col-span-4"><CardBody><div className="h-64 animate-shimmer rounded-lg" /></CardBody></Card>
           <Card className="lg:col-span-2"><CardBody><div className="h-64 animate-shimmer rounded-lg" /></CardBody></Card>
-          <Card><CardBody><div className="h-64 animate-shimmer rounded-lg" /></CardBody></Card>
         </div>
       </div>
     )
@@ -93,16 +62,19 @@ export default function Dashboard() {
     )
   }
 
-  const stats: StatCardProps[] = [
-    { label: 'Konsultasi Hari Ini', value: data.today.total, icon: CalendarCheck, accentColor: 'border-l-blue-500', iconColor: 'text-blue-500', subtitle: `${data.today.completed} selesai` },
-    { label: 'Total Pasien', value: data.total_patients, icon: Users, accentColor: 'border-l-emerald-500', iconColor: 'text-emerald-500', subtitle: `+${data.new_patients_month} bulan ini` },
-    { label: 'Dokter Aktif', value: data.active_doctors, icon: UserCheck, accentColor: 'border-l-violet-500', iconColor: 'text-violet-500' },
-    { label: 'Pasien Baru', value: data.new_patients_month, icon: UserPlus, accentColor: 'border-l-amber-500', iconColor: 'text-amber-500', subtitle: 'bulan ini' },
-    { label: 'Stok Rendah', value: data.low_stock_count, icon: AlertTriangle, accentColor: 'border-l-red-500', iconColor: 'text-red-500', subtitle: data.low_stock_count > 0 ? 'perlu restock' : 'semua aman' },
-  ]
+  return <DashboardContent data={data} />
+}
+
+function DashboardContent({ data }: { data: DashboardStats }) {
+  const navigate = useNavigate()
+  const todayTotal = useCountUp(data.today?.total ?? 0)
+  const completionPct = (data.today?.total ?? 0) > 0
+    ? Math.round(((data.today?.completed ?? 0) / (data.today?.total ?? 1)) * 100)
+    : 0
+  const totalRevenue = (data.revenue_trend ?? []).reduce((s, d) => s + Number(d.total_revenue), 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
@@ -111,59 +83,98 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-        {stats.map((stat, index) => (
-          <div key={stat.label} className="animate-stagger-in" style={{ animationDelay: `${index * 60}ms` }}>
-            <StatCard {...stat} />
+      {/* Stats: hero + satellite */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Hero stat — today's consultations */}
+        <Card accent="left" accentColor="border-l-blue-500" hover>
+          <CardBody>
+            <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mb-1 uppercase tracking-wider">Konsultasi Hari Ini</p>
+            <p className="text-5xl font-bold tracking-tight tabular-nums text-slate-900 dark:text-white">{todayTotal}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {data.today?.completed ?? 0} selesai dari {data.today?.total ?? 0} jadwal
+            </p>
+            <div className="mt-3 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${completionPct}%` }}
+              />
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* 4 satellite stats */}
+        <div className="lg:col-span-2 grid grid-cols-2 gap-3">
+          <div className="p-4 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Pasien</p>
+            <p className="text-2xl font-bold tabular-nums text-slate-900 dark:text-white mt-1">{data.total_patients ?? 0}</p>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">+{data.new_patients_month ?? 0} bulan ini</p>
           </div>
-        ))}
+          <div className="p-4 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Dokter Aktif</p>
+            <p className="text-2xl font-bold tabular-nums text-slate-900 dark:text-white mt-1">{data.active_doctors ?? 0}</p>
+          </div>
+          <div className="p-4 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pasien Baru</p>
+            <p className="text-2xl font-bold tabular-nums text-amber-600 dark:text-amber-400 mt-1">{data.new_patients_month ?? 0}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">bulan ini</p>
+          </div>
+          <div className={`p-4 rounded-lg border shadow-sm ${
+            (data.low_stock_count ?? 0) > 0
+              ? 'bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-800/40'
+              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700'
+          }`}>
+            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Stok Rendah</p>
+            <p className={`text-2xl font-bold tabular-nums mt-1 ${
+              (data.low_stock_count ?? 0) > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white'
+            }`}>{data.low_stock_count ?? 0}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+              {(data.low_stock_count ?? 0) > 0 ? 'perlu restock' : 'semua aman'}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-2">
-        <Button variant="subtle" size="sm" onClick={() => navigate('/patients/create')}>
-          <Plus className="w-3.5 h-3.5 mr-1.5" /> Tambah Pasien
+      {/* Quick Actions — visual hierarchy */}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <Button onClick={() => navigate('/consultations/create')}>
+          <Plus className="w-3.5 h-3.5 mr-1.5" /> Konsultasi Baru
         </Button>
-        <Button variant="subtle" size="sm" onClick={() => navigate('/consultations/create')}>
-          <Plus className="w-3.5 h-3.5 mr-1.5" /> Tambah Konsultasi
+        <Button variant="secondary" size="sm" onClick={() => navigate('/patients/create')}>
+          Tambah Pasien
         </Button>
-        <Button variant="subtle" size="sm" onClick={() => navigate('/orders/create')}>
-          <Plus className="w-3.5 h-3.5 mr-1.5" /> Tambah Order
+        <Button variant="ghost" size="sm" onClick={() => navigate('/orders/create')}>
+          Buat Order
         </Button>
       </div>
 
-      {/* Main Content: Consultation Status + Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {/* Consultation Status */}
+      {/* Consultation Status + Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Consultation Status — data-forward header */}
         <Card accent="left" accentColor="border-l-blue-500" className="lg:col-span-2">
-          <CardHeader>
+          <CardHeader variant="minimal">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ClipboardList className="w-4 h-4 text-slate-400" />
-                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Status Konsultasi Hari Ini</h2>
+              <div>
+                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Status Konsultasi</h2>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Hari ini</p>
               </div>
-              <span className="text-2xl font-bold tabular-nums text-slate-900 dark:text-white">{data.today.total}</span>
+              <span className="text-3xl font-bold tabular-nums text-slate-900 dark:text-white">{data.today?.total ?? 0}</span>
             </div>
           </CardHeader>
           <CardBody>
             <div className="space-y-3">
-              <ConsultationStatusBar label="Dijadwalkan" value={data.today.scheduled} total={data.today.total || 1} color="bg-amber-400" />
-              <ConsultationStatusBar label="Berlangsung" value={data.today.in_progress} total={data.today.total || 1} color="bg-blue-500" />
-              <ConsultationStatusBar label="Selesai" value={data.today.completed} total={data.today.total || 1} color="bg-emerald-500" />
-              <ConsultationStatusBar label="Dibatalkan" value={data.today.cancelled} total={data.today.total || 1} color="bg-red-400" />
+              <ConsultationStatusBar label="Dijadwalkan" value={data.today?.scheduled ?? 0} total={data.today?.total || 1} color="bg-amber-400" />
+              <ConsultationStatusBar label="Berlangsung" value={data.today?.in_progress ?? 0} total={data.today?.total || 1} color="bg-blue-500" />
+              <ConsultationStatusBar label="Selesai" value={data.today?.completed ?? 0} total={data.today?.total || 1} color="bg-emerald-500" />
+              <ConsultationStatusBar label="Dibatalkan" value={data.today?.cancelled ?? 0} total={data.today?.total || 1} color="bg-red-400" />
             </div>
           </CardBody>
         </Card>
 
         {/* Recent Consultations Timeline */}
         <Card>
-          <CardHeader>
+          <CardHeader variant="minimal">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CalendarCheck className="w-4 h-4 text-slate-400" />
-                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Konsultasi Terbaru</h2>
-              </div>
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Konsultasi Terbaru</h2>
               <button
                 onClick={() => navigate('/consultations')}
                 className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
@@ -173,14 +184,13 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardBody>
-            {data.recent_consultations.length === 0 ? (
+            {!(data.recent_consultations ?? []).length ? (
               <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-6">Belum ada konsultasi</p>
             ) : (
               <div className="relative">
-                {/* Timeline line */}
                 <div className="absolute left-[7px] top-2 bottom-2 w-px bg-slate-200 dark:bg-slate-700" />
                 <div className="space-y-4">
-                  {data.recent_consultations.slice(0, 5).map((c) => (
+                  {(data.recent_consultations ?? []).slice(0, 5).map((c) => (
                     <div key={c.uuid} className="relative flex gap-3 pl-6">
                       <CircleDot className="absolute left-0 top-1 w-[15px] h-[15px] text-blue-500 bg-white dark:bg-slate-900" />
                       <div className="flex-1 min-w-0">
@@ -199,66 +209,61 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-500" />
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Pendapatan 30 Hari</h2>
+      {/* Charts — asymmetric grid, no icons */}
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 pt-2">
+        <Card className="lg:col-span-4">
+          <CardHeader variant="minimal">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Pendapatan 30 Hari</h2>
+              <span className="text-xs font-mono text-slate-400 dark:text-slate-500">
+                Rp {totalRevenue.toLocaleString('id-ID')}
+              </span>
             </div>
           </CardHeader>
           <CardBody>
-            <RevenueTrendChart data={data.revenue_trend} />
+            <RevenueTrendChart data={data.revenue_trend ?? []} />
           </CardBody>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-blue-500" />
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Konsultasi 30 Hari</h2>
-            </div>
+        <Card className="lg:col-span-2">
+          <CardHeader variant="minimal">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Konsultasi 30 Hari</h2>
           </CardHeader>
           <CardBody>
-            <ConsultationTrendChart data={data.consultation_trend} />
+            <ConsultationTrendChart data={data.consultation_trend ?? []} />
           </CardBody>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <PieChartIcon className="w-4 h-4 text-violet-500" />
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Status Order</h2>
-            </div>
+        <Card className="lg:col-span-3">
+          <CardHeader variant="minimal">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Status Order</h2>
           </CardHeader>
           <CardBody>
-            <OrderStatusChart data={data.order_status_distribution} />
+            <OrderStatusChart data={data.order_status_distribution ?? []} />
           </CardBody>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Factory className="w-4 h-4 text-amber-500" />
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Pipeline Produksi</h2>
-            </div>
+        <Card className="lg:col-span-3">
+          <CardHeader variant="minimal">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Pipeline Produksi</h2>
           </CardHeader>
           <CardBody>
-            <ProductionPipelineChart data={data.production_pipeline} />
+            <ProductionPipelineChart data={data.production_pipeline ?? []} />
           </CardBody>
         </Card>
       </div>
 
-      {/* Low Stock Alerts */}
-      {data.low_stock_items && data.low_stock_items.length > 0 && (
+      {/* Low Stock — compact list */}
+      {(data.low_stock_items ?? []).length > 0 && (
         <Card accent="top" accentColor="border-t-amber-500">
-          <CardHeader>
+          <CardHeader variant="accent">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-amber-500" />
-                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Stok Rendah</h2>
-              </div>
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Stok Rendah
+                <span className="ml-2 text-xs font-normal text-slate-400 dark:text-slate-500">
+                  {(data.low_stock_items ?? []).length} item
+                </span>
+              </h2>
               <button
                 onClick={() => navigate('/inventory')}
                 className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
@@ -267,29 +272,24 @@ export default function Dashboard() {
               </button>
             </div>
           </CardHeader>
-          <CardBody>
-            <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
-              {data.low_stock_items.map((item) => {
-                const urgency = item.quantity <= Math.floor(item.reorder_level * 0.5) ? 'red' : 'amber'
+          <CardBody compact>
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {(data.low_stock_items ?? []).map((item) => {
+                const urgency = item.quantity <= Math.floor(item.reorder_level * 0.5)
                 return (
-                  <div
-                    key={item.uuid}
-                    className={`flex-shrink-0 w-48 p-3 rounded-lg border transition-colors ${
-                      urgency === 'red'
-                        ? 'border-red-200 dark:border-red-800/50 bg-red-50/50 dark:bg-red-900/10'
-                        : 'border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-900/10'
-                    }`}
-                  >
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
-                    <p className="text-xs font-mono text-slate-400 dark:text-slate-500 mt-0.5">{item.code}</p>
-                    <div className="flex items-end justify-between mt-2">
-                      <div>
-                        <p className={`text-lg font-bold tabular-nums ${urgency === 'red' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                          {item.quantity}
-                        </p>
-                        <p className="text-xs text-slate-400 dark:text-slate-500">{item.unit}</p>
+                  <div key={item.uuid} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
                       </div>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">min: {item.reorder_level}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 font-mono ml-5.5">{item.code}</p>
+                    </div>
+                    <div className="flex items-baseline gap-1.5 ml-4">
+                      <span className={`text-sm font-bold tabular-nums ${urgency ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {item.quantity}
+                      </span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500">/ {item.reorder_level} {item.unit}</span>
                     </div>
                   </div>
                 )

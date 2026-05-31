@@ -42,9 +42,23 @@ export function Card({
   )
 }
 
-export function CardHeader({ children, className = '' }: { children: ReactNode; className?: string }) {
+type CardHeaderVariant = 'default' | 'minimal' | 'accent'
+
+interface CardHeaderProps {
+  children: ReactNode
+  className?: string
+  variant?: CardHeaderVariant
+}
+
+const headerVariants: Record<CardHeaderVariant, string> = {
+  default: 'border-b border-slate-200 dark:border-slate-700',
+  minimal: '',
+  accent: 'border-b-2 border-b-blue-500/20 dark:border-b-blue-400/10',
+}
+
+export function CardHeader({ children, className = '', variant = 'default' }: CardHeaderProps) {
   return (
-    <div className={`px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 ${className}`}>
+    <div className={`px-5 py-3.5 ${headerVariants[variant]} ${className}`}>
       {children}
     </div>
   )

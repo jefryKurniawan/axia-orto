@@ -8,6 +8,7 @@ export function AppLayout() {
   const { user, loading } = useAuth()
   const sidebarOpen = useAppStore((s) => s.sidebarOpen)
   const isMobile = useAppStore((s) => s.isMobile)
+  const pathname = useLocation().pathname
 
   if (loading) {
     return (
@@ -29,7 +30,7 @@ export function AppLayout() {
       <div className="transition-all duration-300" style={{ marginLeft }}>
         <Header />
         <main className="p-4 lg:p-6">
-          <div key={useLocation().pathname} className="animate-page-enter">
+          <div key={pathname} className="animate-page-enter">
             <Outlet />
           </div>
         </main>
